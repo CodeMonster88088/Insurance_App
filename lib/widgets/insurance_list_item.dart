@@ -18,7 +18,7 @@ class InsuranceListItem extends StatelessWidget {
             Text('From: ${insurance.fromDate.toLocal()}'.split(' ')[0]),
             Text('To: ${insurance.toDate.toLocal()}'.split(' ')[0]),
             Text('Travelers: ${insurance.numberOfTravelers}'),
-            Text('Price: ${insurance.price} BHD'),
+            Text('Price: ${insurance.price} BHD'),//----------------
           ],
         ),
       ),
