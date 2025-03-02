@@ -1,0 +1,2 @@
+C:/Users/SarahPoly/Documents/GitHub/Insurance_App/android/app/.cxx/Debug/651vv586/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Users/SarahPoly/Documents/GitHub/Insurance_App/android/app/.cxx/Debug/651vv586/arm64-v8a/CMakeFiles/rebuild_cache.dir

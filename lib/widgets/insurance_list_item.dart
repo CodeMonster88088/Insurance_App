@@ -25,3 +25,4 @@ class InsuranceListItem extends StatelessWidget {
     );
   }
 }
+

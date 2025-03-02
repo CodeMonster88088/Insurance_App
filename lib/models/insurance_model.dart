@@ -16,16 +16,16 @@ class InsuranceModel {
   });
 
   // Factory method to create an InsuranceModel from a Map (e.g., from JSON or sample data)
-  factory InsuranceModel.fromMap(Map<String, dynamic> map) {
-    return InsuranceModel(
-      id: map['id'],
-      provider: map['provider'],
-      fromDate: map['fromDate'],
-      toDate: map['toDate'],
-      numberOfTravelers: map['numberOfTravelers'],
-      price: map['price'],
-    );
-  }
+ factory InsuranceModel.fromMap(Map<String, dynamic> map) {
+  return InsuranceModel(
+    id: map['id'],
+    provider: map['provider'],
+    fromDate: DateTime.parse(map['fromDate']),  // Convert from String to DateTime
+    toDate: DateTime.parse(map['toDate']),      // Convert from String to DateTime
+    numberOfTravelers: map['numberOfTravelers'],
+    price: map['price'].toDouble(),
+  );
+}
 
   // Convert an InsuranceModel to a Map (e.g., for JSON serialization)
   Map<String, dynamic> toMap() {

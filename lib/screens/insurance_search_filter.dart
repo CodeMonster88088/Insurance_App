@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import '../data/sample_data.dart'; // Ensure this file uses InsuranceModel
+import '../data/sample_data.dart'; // Ensure this file contains `sampleInsuranceData`
 import '../widgets/insurance_list_item.dart';
-import '../models/insurance_model.dart'; // Import the InsuranceModel
+import '../models/insurance_model.dart';
+import '../data/sample_data.dart'; // Ensure this file contains sampleInsuranceData
 
 class InsuranceSearchFilter extends StatefulWidget {
   @override
@@ -14,7 +15,8 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
   DateTime? _toDate;
   int _numberOfTravelers = 1;
   double _maxPrice = 100.0;
-  List<InsuranceModel> _filteredData = []; // Use InsuranceModel here
+  List<InsuranceModel> _filteredData = sampleInsuranceData; // Default to all data
+  String _searchQuery = "";
 
   Future<void> _selectFromDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -23,7 +25,7 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
       firstDate: DateTime.now(),
       lastDate: DateTime(2100),
     );
-    if (picked != null && picked != _fromDate) {
+    if (picked != null) {
       setState(() {
         _fromDate = picked;
       });
@@ -37,36 +39,61 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
       firstDate: _fromDate ?? DateTime.now(),
       lastDate: DateTime(2100),
     );
-    if (picked != null && picked != _toDate) {
+    if (picked != null) {
       setState(() {
         _toDate = picked;
       });
     }
   }
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _filteredData = filterInsuranceData(
-          fromDate: _fromDate,
-          toDate: _toDate,
-          numberOfTravelers: _numberOfTravelers,
-          maxPrice: _maxPrice,
-        );
-      });
+  void _applyFilters() {
+    List<InsuranceModel> filteredResults = filterInsuranceData(
+      fromDate: _fromDate,
+      toDate: _toDate,
+      numberOfTravelers: _numberOfTravelers,
+      maxPrice: _maxPrice,
+    );
+
+    // Apply search query on top of filters
+    if (_searchQuery.isNotEmpty) {
+      filteredResults = filteredResults
+          .where((insurance) =>
+              insurance.provider.toLowerCase().contains(_searchQuery.toLowerCase()))
+          .toList();
     }
+
+    setState(() {
+      _filteredData = filteredResults;
+    });
+  }
+
+  void _search(String query) {
+    setState(() {
+      _searchQuery = query;
+    });
+    _applyFilters();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Insurance Search Filter'),
+        title: Text('Insurance Search & Filter'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            // Search Bar
+            TextField(
+              onChanged: _search,
+              decoration: InputDecoration(
+                hintText: 'Search Insurance Provider',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.search),
+              ),
+            ),
+            SizedBox(height: 10),
             Form(
               key: _formKey,
               child: Column(
@@ -87,15 +114,20 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
                     trailing: Icon(Icons.calendar_today),
                     onTap: () => _selectToDate(context),
                   ),
-                  // Number of Travelers
-                  TextFormField(
-                    decoration: InputDecoration(labelText: 'Number of Travelers'),
-                    keyboardType: TextInputType.number,
-                    initialValue: _numberOfTravelers.toString(),
+                  // Number of Travelers Dropdown
+                  DropdownButton<int>(
+                    value: _numberOfTravelers,
+                    items: List.generate(10, (index) => index + 1)
+                        .map((num) => DropdownMenuItem(
+                              value: num,
+                              child: Text('$num Travelers'),
+                            ))
+                        .toList(),
                     onChanged: (value) {
                       setState(() {
-                        _numberOfTravelers = int.tryParse(value) ?? 1;
+                        _numberOfTravelers = value!;
                       });
+                      _applyFilters();
                     },
                   ),
                   // Max Price Slider
@@ -109,26 +141,29 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
                       setState(() {
                         _maxPrice = value;
                       });
+                      _applyFilters();
                     },
                   ),
                   Text('Max Price: ${_maxPrice.toStringAsFixed(2)} BHD'),
-                  // Submit Button
+                  // Apply Filters Button
                   ElevatedButton(
-                    onPressed: _submitForm,
-                    child: Text('Search'),
+                    onPressed: _applyFilters,
+                    child: Text('Apply Filters'),
                   ),
                 ],
               ),
             ),
             // Display Filtered Results
             Expanded(
-              child: ListView.builder(
-                itemCount: _filteredData.length,
-                itemBuilder: (context, index) {
-                  final insurance = _filteredData[index];
-                  return InsuranceListItem(insurance: insurance);
-                },
-              ),
+              child: _filteredData.isEmpty
+                  ? Center(child: Text("No results found"))
+                  : ListView.builder(
+                      itemCount: _filteredData.length,
+                      itemBuilder: (context, index) {
+                        final insurance = _filteredData[index];
+                        return InsuranceListItem(insurance: insurance);
+                      },
+                    ),
             ),
           ],
         ),

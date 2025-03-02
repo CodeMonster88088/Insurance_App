@@ -42,8 +42,9 @@ List<InsuranceModel> filterInsuranceData({
   required double maxPrice,
 }) {
   return sampleInsuranceData.where((insurance) {
-    final matchesFromDate = fromDate == null || insurance.fromDate.isAfter(fromDate);
-    final matchesToDate = toDate == null || insurance.toDate.isBefore(toDate);
+    final matchesFromDate = fromDate == null || insurance.fromDate.isAtSameMomentAs(fromDate) || insurance.fromDate.isAfter(fromDate);
+    final matchesToDate = toDate == null || insurance.toDate.isAtSameMomentAs(toDate) || insurance.toDate.isBefore(toDate);
+
     final matchesTravelers = insurance.numberOfTravelers >= numberOfTravelers;
     final matchesPrice = insurance.price <= maxPrice;
 
