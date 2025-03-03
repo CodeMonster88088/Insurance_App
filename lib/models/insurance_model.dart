@@ -93,6 +93,10 @@ class InsuranceModel {
         region.hashCode;
   }
 
+  get destination => null;
+
+  get duration => null;
+
   @override
   String toString() {
     return 'InsuranceModel(id: $id, provider: $provider, fromDate: $fromDate, toDate: $toDate, numberOfTravelers: $numberOfTravelers, price: $price, region: $region)';

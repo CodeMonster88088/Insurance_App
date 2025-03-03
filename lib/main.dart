@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_test/data/sample_data.dart';
+import 'package:flutter_app_test/models/insurance_model.dart';
 import 'package:intl/intl.dart';
 
 void main() {
@@ -30,6 +32,7 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
   String? _selectedProvider;
   String? _selectedRegion;
   bool _isLoading = false;
+  List<InsuranceModel> _filteredResults = [];
 
   final TextEditingController _destinationController = TextEditingController();
   final TextEditingController _durationController = TextEditingController();
@@ -62,6 +65,7 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
       _selectedRegion = null;
       _destinationController.clear();
       _durationController.clear();
+      _filteredResults = [];
     });
   }
 
@@ -73,39 +77,48 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
     // Simulate a delay (replace with actual search logic)
     await Future.delayed(const Duration(seconds: 2));
 
+    // Filter the data based on the applied filters
+    _filteredResults = sampleInsuranceData.where((insurance) {
+      // Filter by destination (if provided)
+      final matchesDestination = _destinationController.text.isEmpty ||
+          insurance.destination.toLowerCase().contains(_destinationController.text.toLowerCase());
+
+      // Filter by duration (if provided)
+      final matchesDuration = _durationController.text.isEmpty ||
+          insurance.duration == int.tryParse(_durationController.text);
+
+      // Filter by region (if provided)
+      final matchesRegion = _selectedRegion == null ||
+          insurance.region.toLowerCase() == _selectedRegion!.toLowerCase();
+
+      // Filter by provider (if provided)
+      final matchesProvider = _selectedProvider == null ||
+          insurance.provider.toLowerCase() == _selectedProvider!.toLowerCase();
+
+      // Filter by date range (if provided)
+      final matchesFromDate = _fromDate == null || insurance.fromDate.isAtSameMomentAs(_fromDate!) || insurance.fromDate.isAfter(_fromDate!);
+      final matchesToDate = _toDate == null || insurance.toDate.isAtSameMomentAs(_toDate!) || insurance.toDate.isBefore(_toDate!);
+
+      // Filter by number of travelers (if provided)
+      final matchesTravelers = _numberOfTravelers == 1 || insurance.numberOfTravelers >= _numberOfTravelers;
+
+      // Filter by price range (if provided)
+      final matchesPrice = insurance.price >= _priceRange.start && insurance.price <= _priceRange.end;
+
+      // Combine all filters
+      return matchesDestination &&
+             matchesDuration &&
+             matchesRegion &&
+             matchesProvider &&
+             matchesFromDate &&
+             matchesToDate &&
+             matchesTravelers &&
+             matchesPrice;
+    }).toList();
+
     setState(() {
       _isLoading = false;
     });
-
-    String destination = _destinationController.text;
-    String duration = _durationController.text;
-
-    // Check if at least one filter is applied
-    final hasFilters = destination.isNotEmpty ||
-        duration.isNotEmpty ||
-        _selectedRegion != null ||
-        _selectedProvider != null ||
-        _fromDate != null ||
-        _toDate != null ||
-        _numberOfTravelers != 1 ||
-        _priceRange != const RangeValues(20, 100);
-
-    if (hasFilters) {
-      // Perform your search logic here
-      print('Destination: $destination');
-      print('Duration: $duration');
-      print('Selected Region: $_selectedRegion');
-      print('Selected Provider: $_selectedProvider');
-      print('From Date: $_fromDate');
-      print('To Date: $_toDate');
-      print('Number of Travelers: $_numberOfTravelers');
-      print('Price Range: ${_priceRange.start} - ${_priceRange.end}');
-    } else {
-      // Show an error message if no filters are applied
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please apply at least one filter!')),
-      );
-    }
   }
 
   @override
@@ -233,6 +246,35 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
                   ),
                 ),
               ],
+            ),
+
+            // Display Filtered Results
+            Expanded(
+              child: _isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : _filteredResults.isEmpty
+                      ? Center(child: Text("No results found. Try adjusting your filters."))
+                      : ListView.builder(
+                          itemCount: _filteredResults.length,
+                          itemBuilder: (context, index) {
+                            final insurance = _filteredResults[index];
+                            return ListTile(
+                              title: Text(insurance.provider),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Destination: ${insurance.destination}'),
+                                  Text('Duration: ${insurance.duration} days'),
+                                  Text('Region: ${insurance.region}'),
+                                  Text('From: ${DateFormat('yyyy-MM-dd').format(insurance.fromDate)}'),
+                                  Text('To: ${DateFormat('yyyy-MM-dd').format(insurance.toDate)}'),
+                                  Text('Travelers: ${insurance.numberOfTravelers}'),
+                                  Text('Price: ${insurance.price.toStringAsFixed(2)} BHD'),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
             ),
           ],
         ),
