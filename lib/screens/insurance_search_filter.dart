@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../data/sample_data.dart'; // Ensure this file contains `sampleInsuranceData`
+import 'package:intl/intl.dart';
+import '../data/sample_data.dart'; // Ensure this import is present
 import '../widgets/insurance_list_item.dart';
 import '../models/insurance_model.dart';
-import '../data/sample_data.dart'; // Ensure this file contains sampleInsuranceData
 
 class InsuranceSearchFilter extends StatefulWidget {
   @override
@@ -15,8 +15,10 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
   DateTime? _toDate;
   int _numberOfTravelers = 1;
   double _maxPrice = 100.0;
-  List<InsuranceModel> _filteredData = sampleInsuranceData; // Default to all data
+  List<InsuranceModel> _filteredData = sampleInsuranceData;
   String _searchQuery = "";
+  bool _isLoading = false;
+  String? _selectedRegion; // Add this for region filtering
 
   Future<void> _selectFromDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -40,30 +42,50 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
       lastDate: DateTime(2100),
     );
     if (picked != null) {
-      setState(() {
-        _toDate = picked;
-      });
+      if (_fromDate != null && picked.isBefore(_fromDate!)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('To date must be after or equal to from date')),
+        );
+      } else {
+        setState(() {
+          _toDate = picked;
+        });
+      }
     }
   }
 
-  void _applyFilters() {
+  void _applyFilters() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    await Future.delayed(Duration(milliseconds: 500)); // Simulate delay
+
+    // Call the filterInsuranceData function with only the applied filters
     List<InsuranceModel> filteredResults = filterInsuranceData(
       fromDate: _fromDate,
       toDate: _toDate,
       numberOfTravelers: _numberOfTravelers,
       maxPrice: _maxPrice,
+      region: _selectedRegion, // Add this if you have a region filter
+      searchQuery: _searchQuery,
     );
-
-    // Apply search query on top of filters
-    if (_searchQuery.isNotEmpty) {
-      filteredResults = filteredResults
-          .where((insurance) =>
-              insurance.provider.toLowerCase().contains(_searchQuery.toLowerCase()))
-          .toList();
-    }
 
     setState(() {
       _filteredData = filteredResults;
+      _isLoading = false;
+    });
+  }
+
+  void _clearFilters() {
+    setState(() {
+      _fromDate = null;
+      _toDate = null;
+      _numberOfTravelers = 1;
+      _maxPrice = 100.0;
+      _searchQuery = "";
+      _selectedRegion = null; // Clear region filter
+      _filteredData = sampleInsuranceData;
     });
   }
 
@@ -91,6 +113,17 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
                 hintText: 'Search Insurance Provider',
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.search),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: Icon(Icons.clear),
+                        onPressed: () {
+                          setState(() {
+                            _searchQuery = "";
+                          });
+                          _applyFilters();
+                        },
+                      )
+                    : null,
               ),
             ),
             SizedBox(height: 10),
@@ -102,7 +135,7 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
                   ListTile(
                     title: Text(_fromDate == null
                         ? 'Select From Date'
-                        : 'From: ${_fromDate!.toLocal()}'.split(' ')[0]),
+                        : 'From: ${DateFormat('yyyy-MM-dd').format(_fromDate!)}'),
                     trailing: Icon(Icons.calendar_today),
                     onTap: () => _selectFromDate(context),
                   ),
@@ -110,19 +143,16 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
                   ListTile(
                     title: Text(_toDate == null
                         ? 'Select To Date'
-                        : 'To: ${_toDate!.toLocal()}'.split(' ')[0]),
+                        : 'To: ${DateFormat('yyyy-MM-dd').format(_toDate!)}'),
                     trailing: Icon(Icons.calendar_today),
                     onTap: () => _selectToDate(context),
                   ),
                   // Number of Travelers Dropdown
                   DropdownButton<int>(
                     value: _numberOfTravelers,
-                    items: List.generate(10, (index) => index + 1)
-                        .map((num) => DropdownMenuItem(
-                              value: num,
-                              child: Text('$num Travelers'),
-                            ))
-                        .toList(),
+                    items: List.generate(10, (index) => index + 1).map((num) {
+                      return DropdownMenuItem(value: num, child: Text('$num Travelers'));
+                    }).toList(),
                     onChanged: (value) {
                       setState(() {
                         _numberOfTravelers = value!;
@@ -145,25 +175,54 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
                     },
                   ),
                   Text('Max Price: ${_maxPrice.toStringAsFixed(2)} BHD'),
-                  // Apply Filters Button
-                  ElevatedButton(
-                    onPressed: _applyFilters,
-                    child: Text('Apply Filters'),
+                  // Region Dropdown (Add this if you have a region filter)
+                  DropdownButton<String>(
+                    value: _selectedRegion,
+                    hint: Text('Select Region'),
+                    items: ['Europe', 'Middle East', 'Asia', 'Africa', 'North America', 'South America']
+                        .map((region) {
+                      return DropdownMenuItem(value: region, child: Text(region));
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedRegion = value;
+                      });
+                      _applyFilters();
+                    },
+                  ),
+                  // Apply and Clear Filters Buttons
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton(
+                        onPressed: _applyFilters,
+                        child: Text('Apply Filters'),
+                      ),
+                      ElevatedButton(
+                        onPressed: _clearFilters,
+                        child: Text('Clear Filters'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
             // Display Filtered Results
             Expanded(
-              child: _filteredData.isEmpty
-                  ? Center(child: Text("No results found"))
-                  : ListView.builder(
-                      itemCount: _filteredData.length,
-                      itemBuilder: (context, index) {
-                        final insurance = _filteredData[index];
-                        return InsuranceListItem(insurance: insurance);
-                      },
-                    ),
+              child: _isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : _filteredData.isEmpty
+                      ? Center(child: Text("No results found. Try adjusting your filters."))
+                      : ListView.builder(
+                          itemCount: _filteredData.length,
+                          itemBuilder: (context, index) {
+                            final insurance = _filteredData[index];
+                            return InsuranceListItem(insurance: insurance);
+                          },
+                        ),
             ),
           ],
         ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-
 void main() {
   runApp(const MyApp());
 }
@@ -29,13 +28,14 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
   RangeValues _priceRange = const RangeValues(20, 100);
   int _numberOfTravelers = 1;
   String? _selectedProvider;
-  String? _selectedRegion;  // Variable to store selected region
+  String? _selectedRegion;
+  bool _isLoading = false;
 
   final TextEditingController _destinationController = TextEditingController();
   final TextEditingController _durationController = TextEditingController();
 
   final List<String> providers = ["All", "Insurance Co. A", "Insurance Co. B", "Insurance Co. C", "Insurance Co. D"];
-  final List<String> regions = ['Europe', 'Middle East', 'Asia', 'Africa', 'North America', 'South America']; // List of regions
+  final List<String> regions = ['Europe', 'Middle East', 'Asia', 'Africa', 'North America', 'South America'];
 
   Future<void> _selectDateRange() async {
     final picked = await showDateRangePicker(
@@ -49,6 +49,62 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
         _fromDate = picked.start;
         _toDate = picked.end;
       });
+    }
+  }
+
+  void _clearFilters() {
+    setState(() {
+      _fromDate = null;
+      _toDate = null;
+      _priceRange = const RangeValues(20, 100);
+      _numberOfTravelers = 1;
+      _selectedProvider = null;
+      _selectedRegion = null;
+      _destinationController.clear();
+      _durationController.clear();
+    });
+  }
+
+  void _performSearch() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Simulate a delay (replace with actual search logic)
+    await Future.delayed(const Duration(seconds: 2));
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    String destination = _destinationController.text;
+    String duration = _durationController.text;
+
+    // Check if at least one filter is applied
+    final hasFilters = destination.isNotEmpty ||
+        duration.isNotEmpty ||
+        _selectedRegion != null ||
+        _selectedProvider != null ||
+        _fromDate != null ||
+        _toDate != null ||
+        _numberOfTravelers != 1 ||
+        _priceRange != const RangeValues(20, 100);
+
+    if (hasFilters) {
+      // Perform your search logic here
+      print('Destination: $destination');
+      print('Duration: $duration');
+      print('Selected Region: $_selectedRegion');
+      print('Selected Provider: $_selectedProvider');
+      print('From Date: $_fromDate');
+      print('To Date: $_toDate');
+      print('Number of Travelers: $_numberOfTravelers');
+      print('Price Range: ${_priceRange.start} - ${_priceRange.end}');
+    } else {
+      // Show an error message if no filters are applied
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please apply at least one filter!')),
+      );
     }
   }
 
@@ -87,27 +143,33 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
               title: Text(
                 _fromDate == null || _toDate == null
                     ? "Select Date Range"
-                    : "From: ${DateFormat.yMMMd().format(_fromDate!)} - To: ${DateFormat.yMMMd().format(_toDate!)}"
+                    : "From: ${DateFormat('yyyy-MM-dd').format(_fromDate!)} - To: ${DateFormat('yyyy-MM-dd').format(_toDate!)}",
               ),
               trailing: const Icon(Icons.calendar_today),
               onTap: _selectDateRange,
             ),
-            
-            // Number of Travelers
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+            // Number of Travelers Slider
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text("Number of Travelers"),
-                DropdownButton<int>(
-                  value: _numberOfTravelers,
-                  items: List.generate(10, (index) => index + 1).map((e) {
-                    return DropdownMenuItem(value: e, child: Text(e.toString()));
-                  }).toList(),
-                  onChanged: (value) => setState(() => _numberOfTravelers = value!),
+                Slider(
+                  value: _numberOfTravelers.toDouble(),
+                  min: 1,
+                  max: 10,
+                  divisions: 9,
+                  label: '$_numberOfTravelers Travelers',
+                  onChanged: (value) {
+                    setState(() {
+                      _numberOfTravelers = value.toInt();
+                    });
+                  },
                 ),
+                Text('Selected: $_numberOfTravelers Travelers'),
               ],
             ),
-            
+
             // Price Range
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,6 +183,7 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
                   labels: RangeLabels("${_priceRange.start}", "${_priceRange.end}"),
                   onChanged: (values) => setState(() => _priceRange = values),
                 ),
+                Text('Selected: ${_priceRange.start.toStringAsFixed(2)} - ${_priceRange.end.toStringAsFixed(2)} BHD'),
               ],
             ),
 
@@ -147,28 +210,29 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
             ),
 
             const SizedBox(height: 20),
-            
-            // Search Button
-            ElevatedButton(
-              onPressed: () {
-                String destination = _destinationController.text;
-                String duration = _durationController.text;
-                
-                print('Destination: $destination');
-                print('Duration: $duration');
-                print('Selected Region: $_selectedRegion');
-                print('Selected Provider: $_selectedProvider');
-                
-                if (destination.isNotEmpty && duration.isNotEmpty && _selectedRegion != null && _selectedProvider != null) {
-                  // Perform your search logic here
-                } else {
-                  // Show message if any field is empty
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please fill in all fields!')),
-                  );
-                }
-              },
-              child: const Text("Search"),
+
+            // Search and Clear Filters Buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _performSearch,
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text("Search"),
+                ),
+                ElevatedButton(
+                  onPressed: _clearFilters,
+                  child: const Text("Clear Filters"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
