@@ -37,8 +37,21 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
   final TextEditingController _destinationController = TextEditingController();
   final TextEditingController _durationController = TextEditingController();
 
-  final List<String> providers = ["All", "Insurance Co. A", "Insurance Co. B", "Insurance Co. C", "Insurance Co. D"];
-  final List<String> regions = ['Europe', 'Middle East', 'Asia', 'Africa', 'North America', 'South America'];
+  final List<String> providers = [
+    "All",
+    "Insurance Co. A",
+    "Insurance Co. B",
+    "Insurance Co. C",
+    "Insurance Co. D"
+  ];
+  final List<String> regions = [
+    'Europe',
+    'Middle East',
+    'Asia',
+    'Africa',
+    'North America',
+    'South America'
+  ];
 
   Future<void> _selectDateRange() async {
     final picked = await showDateRangePicker(
@@ -79,41 +92,41 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
 
     // Filter the data based on the applied filters
     _filteredResults = sampleInsuranceData.where((insurance) {
-      // Filter by destination (if provided)
       final matchesDestination = _destinationController.text.isEmpty ||
-          insurance.destination.toLowerCase().contains(_destinationController.text.toLowerCase());
+          insurance.destination
+              .toLowerCase()
+              .contains(_destinationController.text.toLowerCase());
 
-      // Filter by duration (if provided)
       final matchesDuration = _durationController.text.isEmpty ||
           insurance.duration == int.tryParse(_durationController.text);
 
-      // Filter by region (if provided)
       final matchesRegion = _selectedRegion == null ||
           insurance.region.toLowerCase() == _selectedRegion!.toLowerCase();
 
-      // Filter by provider (if provided)
       final matchesProvider = _selectedProvider == null ||
           insurance.provider.toLowerCase() == _selectedProvider!.toLowerCase();
 
-      // Filter by date range (if provided)
-      final matchesFromDate = _fromDate == null || insurance.fromDate.isAtSameMomentAs(_fromDate!) || insurance.fromDate.isAfter(_fromDate!);
-      final matchesToDate = _toDate == null || insurance.toDate.isAtSameMomentAs(_toDate!) || insurance.toDate.isBefore(_toDate!);
+      final matchesFromDate = _fromDate == null ||
+          insurance.fromDate.isAtSameMomentAs(_fromDate!) ||
+          insurance.fromDate.isAfter(_fromDate!);
+      final matchesToDate = _toDate == null ||
+          insurance.toDate.isAtSameMomentAs(_toDate!) ||
+          insurance.toDate.isBefore(_toDate!);
 
-      // Filter by number of travelers (if provided)
-      final matchesTravelers = _numberOfTravelers == 1 || insurance.numberOfTravelers >= _numberOfTravelers;
+      final matchesTravelers = _numberOfTravelers == 1 ||
+          insurance.numberOfTravelers >= _numberOfTravelers;
 
-      // Filter by price range (if provided)
-      final matchesPrice = insurance.price >= _priceRange.start && insurance.price <= _priceRange.end;
+      final matchesPrice = insurance.price >= _priceRange.start &&
+          insurance.price <= _priceRange.end;
 
-      // Combine all filters
       return matchesDestination &&
-             matchesDuration &&
-             matchesRegion &&
-             matchesProvider &&
-             matchesFromDate &&
-             matchesToDate &&
-             matchesTravelers &&
-             matchesPrice;
+          matchesDuration &&
+          matchesRegion &&
+          matchesProvider &&
+          matchesFromDate &&
+          matchesToDate &&
+          matchesTravelers &&
+          matchesPrice;
     }).toList();
 
     setState(() {
@@ -193,10 +206,12 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
                   min: 20,
                   max: 200,
                   divisions: 18,
-                  labels: RangeLabels("${_priceRange.start}", "${_priceRange.end}"),
+                  labels:
+                      RangeLabels("${_priceRange.start}", "${_priceRange.end}"),
                   onChanged: (values) => setState(() => _priceRange = values),
                 ),
-                Text('Selected: ${_priceRange.start.toStringAsFixed(2)} - ${_priceRange.end.toStringAsFixed(2)} BHD'),
+                Text(
+                    'Selected: ${_priceRange.start.toStringAsFixed(2)} - ${_priceRange.end.toStringAsFixed(2)} BHD'),
               ],
             ),
 
@@ -251,31 +266,59 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
             // Display Filtered Results
             Expanded(
               child: _isLoading
-                  ? Center(child: CircularProgressIndicator())
+                  ? Center(
+                      child: CircularProgressIndicator(), // Show loading indicator
+                    )
                   : _filteredResults.isEmpty
-                      ? Center(child: Text("No results found. Try adjusting your filters."))
+                      ? Center(
+                          child: Text(
+                              "No results found. Try adjusting your filters."), // No results message
+                        )
                       : ListView.builder(
                           itemCount: _filteredResults.length,
                           itemBuilder: (context, index) {
                             final insurance = _filteredResults[index];
-                            return ListTile(
-                              title: Text(insurance.provider),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Destination: ${insurance.destination}'),
-                                  Text('Duration: ${insurance.duration} days'),
-                                  Text('Region: ${insurance.region}'),
-                                  Text('From: ${DateFormat('yyyy-MM-dd').format(insurance.fromDate)}'),
-                                  Text('To: ${DateFormat('yyyy-MM-dd').format(insurance.toDate)}'),
-                                  Text('Travelers: ${insurance.numberOfTravelers}'),
-                                  Text('Price: ${insurance.price.toStringAsFixed(2)} BHD'),
-                                ],
-                              ),
-                            );
+                            return InsuranceListItem(insurance: insurance);
                           },
                         ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Custom Widget for Insurance List Item
+class InsuranceListItem extends StatelessWidget {
+  final InsuranceModel insurance;
+
+  const InsuranceListItem({required this.insurance, Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              insurance.provider,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text('Destination: ${insurance.destination}'),
+            Text('Duration: ${insurance.duration} days'),
+            Text('Region: ${insurance.region}'),
+            Text('From: ${DateFormat('yyyy-MM-dd').format(insurance.fromDate)}'),
+            Text('To: ${DateFormat('yyyy-MM-dd').format(insurance.toDate)}'),
+            Text('Travelers: ${insurance.numberOfTravelers}'),
+            Text('Price: ${insurance.price.toStringAsFixed(2)} BHD'),
           ],
         ),
       ),
