@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import 'screens/insurance_search_filter.dart';
+import 'package:flutter_app_test/screens/insurance_search_filter.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Insurance Platform',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      debugShowCheckedModeBanner: false,
       home: InsuranceSearchFilter(),
     );
   }
