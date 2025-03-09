@@ -18,7 +18,8 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
   List<InsuranceModel> _filteredData = sampleInsuranceData;
   String _searchQuery = "";
   bool _isLoading = false;
-  String? _selectedRegion; // Add this for region filtering
+  String? _selectedRegion;
+  bool _showPriceFilter = false; // Add this line
 
   Future<void> _selectFromDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -160,21 +161,37 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
                       _applyFilters();
                     },
                   ),
-                  // Max Price Slider
-                  Slider(
-                    value: _maxPrice,
-                    min: 0,
-                    max: 500,
-                    divisions: 100,
-                    label: _maxPrice.toStringAsFixed(2),
-                    onChanged: (value) {
-                      setState(() {
-                        _maxPrice = value;
-                      });
-                      _applyFilters();
-                    },
+                  // Checkbox to show/hide price filter
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _showPriceFilter,
+                        onChanged: (value) {
+                          setState(() {
+                            _showPriceFilter = value!;
+                          });
+                        },
+                      ),
+                      Text('Show Price Filter'),
+                    ],
                   ),
-                  Text('Max Price: ${_maxPrice.toStringAsFixed(2)} BHD'),
+                  // Conditionally render the price filter
+                  if (_showPriceFilter) ...[
+                    Slider(
+                      value: _maxPrice,
+                      min: 0,
+                      max: 500,
+                      divisions: 100,
+                      label: _maxPrice.toStringAsFixed(2),
+                      onChanged: (value) {
+                        setState(() {
+                          _maxPrice = value;
+                        });
+                        _applyFilters();
+                      },
+                    ),
+                    Text('Max Price: ${_maxPrice.toStringAsFixed(2)} BHD'),
+                  ],
                   // Region Dropdown (Add this if you have a region filter)
                   DropdownButton<String>(
                     value: _selectedRegion,

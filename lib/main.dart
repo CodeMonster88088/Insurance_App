@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_test/data/sample_data.dart';
 import 'package:flutter_app_test/models/insurance_model.dart';
 import 'package:intl/intl.dart';
+import 'home.dart'; // Import the homepage
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,7 +16,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: InsuranceSearchScreen(),
+      home: HomePage(),
     );
   }
 }
@@ -27,12 +29,34 @@ class InsuranceSearchScreen extends StatefulWidget {
 class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
   DateTime? _fromDate;
   DateTime? _toDate;
-  RangeValues _priceRange = const RangeValues(20, 100);
   int _numberOfTravelers = 1;
   String? _selectedProvider;
   String? _selectedRegion;
   bool _isLoading = false;
   List<InsuranceModel> _filteredResults = [];
+  String _searchQuery = "";
+
+  // Define currency for each region
+  final Map<String, String> _regionCurrency = {
+    'Europe': 'EUR',
+    'Middle East': 'BHD',
+    'Asia': 'INR',
+    'Africa': 'USD',
+    'North America': 'USD',
+    'South America': 'USD',
+  };
+
+  // Define price ranges for each region
+  final Map<String, List<String>> _regionPriceRanges = {
+    'Europe': ["0-50 EUR", "50-100 EUR", "100-150 EUR", "150-200 EUR"],
+    'Middle East': ["0-50 BHD", "50-100 BHD", "100-150 BHD"],
+    'Asia': ["0-50 INR", "50-100 INR"],
+    'Africa': ["0-50 USD", "50-100 USD", "100-150 USD"],
+    'North America': ["0-50 USD", "50-100 USD", "100-150 USD", "150-200 USD", "200+ USD"],
+    'South America': ["0-50 USD", "50-100 USD", "100-150 USD"],
+  };
+  List<String> _priceRanges = [];
+  String? _selectedPriceRange;
 
   final TextEditingController _destinationController = TextEditingController();
   final TextEditingController _durationController = TextEditingController();
@@ -53,6 +77,15 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
     'South America'
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    // Initialize price ranges based on the default region (if any)
+    if (_selectedRegion != null) {
+      _priceRanges = _regionPriceRanges[_selectedRegion!] ?? [];
+    }
+  }
+
   Future<void> _selectDateRange() async {
     final picked = await showDateRangePicker(
       context: context,
@@ -72,10 +105,10 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
     setState(() {
       _fromDate = null;
       _toDate = null;
-      _priceRange = const RangeValues(20, 100);
       _numberOfTravelers = 1;
       _selectedProvider = null;
       _selectedRegion = null;
+      _selectedPriceRange = null;
       _destinationController.clear();
       _durationController.clear();
       _filteredResults = [];
@@ -116,8 +149,9 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
       final matchesTravelers = _numberOfTravelers == 1 ||
           insurance.numberOfTravelers >= _numberOfTravelers;
 
-      final matchesPrice = insurance.price >= _priceRange.start &&
-          insurance.price <= _priceRange.end;
+      // Filter by selected price range
+      final matchesPrice = _selectedPriceRange == null ||
+          _isPriceInRange(insurance.price, _selectedPriceRange!);
 
       return matchesDestination &&
           matchesDuration &&
@@ -132,6 +166,18 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
     setState(() {
       _isLoading = false;
     });
+  }
+
+  // Helper function to check if the price is within the selected range
+  bool _isPriceInRange(double price, String range) {
+    final currency = _regionCurrency[_selectedRegion] ?? 'USD'; // Default to USD
+    final rangeValues = range.replaceAll(currency, '').split('-');
+    final minPrice = double.tryParse(rangeValues[0]) ?? 0;
+    final maxPrice = rangeValues[1].endsWith('+')
+        ? double.infinity
+        : double.tryParse(rangeValues[1]) ?? double.infinity;
+
+    return price >= minPrice && price <= maxPrice;
   }
 
   @override
@@ -196,24 +242,40 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
               ],
             ),
 
-            // Price Range
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text("Price Range (BHD)"),
-                RangeSlider(
-                  values: _priceRange,
-                  min: 20,
-                  max: 200,
-                  divisions: 18,
-                  labels:
-                      RangeLabels("${_priceRange.start}", "${_priceRange.end}"),
-                  onChanged: (values) => setState(() => _priceRange = values),
-                ),
-                Text(
-                    'Selected: ${_priceRange.start.toStringAsFixed(2)} - ${_priceRange.end.toStringAsFixed(2)} BHD'),
-              ],
+            // Region Dropdown
+            DropdownButtonFormField<String>(
+              value: _selectedRegion,
+              hint: const Text("Select Region"),
+              items: regions.map((region) {
+                return DropdownMenuItem(value: region, child: Text(region));
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedRegion = value;
+                  // Update price ranges based on the selected region
+                  _priceRanges = _regionPriceRanges[value!] ?? [];
+                  _selectedPriceRange = null; // Reset selected price range
+                });
+              },
             ),
+
+            const SizedBox(height: 10),
+
+            // Price Range Combo Box
+            DropdownButtonFormField<String>(
+              value: _selectedPriceRange,
+              hint: const Text("Select Price Range"),
+              items: _priceRanges.map((range) {
+                return DropdownMenuItem(value: range, child: Text(range));
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedPriceRange = value;
+                });
+              },
+            ),
+
+            const SizedBox(height: 10),
 
             // Provider Dropdown
             DropdownButtonFormField<String>(
@@ -223,18 +285,6 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
                 return DropdownMenuItem(value: provider, child: Text(provider));
               }).toList(),
               onChanged: (value) => setState(() => _selectedProvider = value),
-            ),
-
-            const SizedBox(height: 10),
-
-            // Region Dropdown
-            DropdownButtonFormField<String>(
-              value: _selectedRegion,
-              hint: const Text("Select Region"),
-              items: regions.map((region) {
-                return DropdownMenuItem(value: region, child: Text(region));
-              }).toList(),
-              onChanged: (value) => setState(() => _selectedRegion = value),
             ),
 
             const SizedBox(height: 20),
@@ -278,7 +328,10 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
                           itemCount: _filteredResults.length,
                           itemBuilder: (context, index) {
                             final insurance = _filteredResults[index];
-                            return InsuranceListItem(insurance: insurance);
+                            return InsuranceListItem(
+                              insurance: insurance,
+                              currency: _regionCurrency[_selectedRegion] ?? 'USD', // Pass currency
+                            );
                           },
                         ),
             ),
@@ -292,8 +345,13 @@ class _InsuranceSearchScreenState extends State<InsuranceSearchScreen> {
 // Custom Widget for Insurance List Item
 class InsuranceListItem extends StatelessWidget {
   final InsuranceModel insurance;
+  final String currency;
 
-  const InsuranceListItem({required this.insurance, Key? key}) : super(key: key);
+  const InsuranceListItem({
+    required this.insurance,
+    required this.currency,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -318,10 +376,12 @@ class InsuranceListItem extends StatelessWidget {
             Text('From: ${DateFormat('yyyy-MM-dd').format(insurance.fromDate)}'),
             Text('To: ${DateFormat('yyyy-MM-dd').format(insurance.toDate)}'),
             Text('Travelers: ${insurance.numberOfTravelers}'),
-            Text('Price: ${insurance.price.toStringAsFixed(2)} BHD'),
+            Text('Price: ${insurance.price.toStringAsFixed(2)} $currency'), // Display price with currency
           ],
         ),
       ),
     );
   }
 }
+
+
