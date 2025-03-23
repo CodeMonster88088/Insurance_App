@@ -1,8 +1,7 @@
 class InsuranceModel {
   final int id;
   final String provider;
-  final DateTime fromDate;
-  final DateTime toDate;
+  final int duration; // Duration in days
   final int numberOfTravelers;
   final double price;
   final String region;
@@ -10,8 +9,7 @@ class InsuranceModel {
   InsuranceModel({
     required this.id,
     required this.provider,
-    required this.fromDate,
-    required this.toDate,
+    required this.duration,
     required this.numberOfTravelers,
     required this.price,
     required this.region,
@@ -22,8 +20,7 @@ class InsuranceModel {
     return InsuranceModel(
       id: map['id'],
       provider: map['provider'],
-      fromDate: DateTime.parse(map['fromDate']), // Convert from String to DateTime
-      toDate: DateTime.parse(map['toDate']),     // Convert from String to DateTime
+      duration: map['duration'], // Duration in days
       numberOfTravelers: map['numberOfTravelers'],
       price: map['price'].toDouble(),
       region: map['region'],
@@ -35,25 +32,18 @@ class InsuranceModel {
     return {
       'id': id,
       'provider': provider,
-      'fromDate': fromDate.toIso8601String(), // Convert DateTime to String
-      'toDate': toDate.toIso8601String(),     // Convert DateTime to String
+      'duration': duration, // Store duration instead of dates
       'numberOfTravelers': numberOfTravelers,
       'price': price,
       'region': region,
     };
   }
 
-  // Validate date range
-  bool isValidDateRange() {
-    return toDate.isAfter(fromDate) || toDate.isAtSameMomentAs(fromDate);
-  }
-
   // Create a copy of the model with updated fields
   InsuranceModel copyWith({
     int? id,
     String? provider,
-    DateTime? fromDate,
-    DateTime? toDate,
+    int? duration,
     int? numberOfTravelers,
     double? price,
     String? region,
@@ -61,8 +51,7 @@ class InsuranceModel {
     return InsuranceModel(
       id: id ?? this.id,
       provider: provider ?? this.provider,
-      fromDate: fromDate ?? this.fromDate,
-      toDate: toDate ?? this.toDate,
+      duration: duration ?? this.duration,
       numberOfTravelers: numberOfTravelers ?? this.numberOfTravelers,
       price: price ?? this.price,
       region: region ?? this.region,
@@ -75,8 +64,7 @@ class InsuranceModel {
     return other is InsuranceModel &&
         other.id == id &&
         other.provider == provider &&
-        other.fromDate == fromDate &&
-        other.toDate == toDate &&
+        other.duration == duration &&
         other.numberOfTravelers == numberOfTravelers &&
         other.price == price &&
         other.region == region;
@@ -86,19 +74,14 @@ class InsuranceModel {
   int get hashCode {
     return id.hashCode ^
         provider.hashCode ^
-        fromDate.hashCode ^
-        toDate.hashCode ^
+        duration.hashCode ^
         numberOfTravelers.hashCode ^
         price.hashCode ^
         region.hashCode;
   }
 
-  get destination => null;
-
-  get duration => null;
-
   @override
   String toString() {
-    return 'InsuranceModel(id: $id, provider: $provider, fromDate: $fromDate, toDate: $toDate, numberOfTravelers: $numberOfTravelers, price: $price, region: $region)';
+    return 'InsuranceModel(id: $id, provider: $provider, duration: $duration days, numberOfTravelers: $numberOfTravelers, price: $price, region: $region)';
   }
 }

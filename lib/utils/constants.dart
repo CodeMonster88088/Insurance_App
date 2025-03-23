@@ -1,16 +1,13 @@
-const List<String> providers = [
-  "All",
-  "Insurance Co. A",
-  "Insurance Co. B",
-  "Insurance Co. C",
-  "Insurance Co. D"
+import 'package:flutter_app_test/data/sample_data.dart';
+import '../models/insurance_model.dart';
+
+
+// Extract unique providers dynamically
+final List<String> providers = [
+  ...{for (var insurance in sampleInsuranceData) insurance.provider}
 ];
 
-const List<String> regions = [
-  'Europe',
-  'Middle East',
-  'Asia',
-  'Africa',
-  'North America',
-  'South America'
+// Extract unique regions dynamically
+final List<String> regions = [
+  ...{for (var insurance in sampleInsuranceData) insurance.region}
 ];

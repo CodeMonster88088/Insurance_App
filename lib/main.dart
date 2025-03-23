@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_test/screens/home.dart';
 import 'package:flutter_app_test/screens/insurance_search_filter.dart';
 
 void main() {
@@ -12,7 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: InsuranceSearchFilter(),
+      home: HomePage(),
     );
   }
 }
