@@ -13,7 +13,8 @@ class InsuranceSearchFilter extends StatefulWidget {
 class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
   DateTime? _fromDate;
   DateTime? _toDate;
-  RangeValues _priceRange = const RangeValues(20, 100);
+  RangeValues _priceRange = const RangeValues(20, 200);
+    bool _showPriceFilter = false; // Controls price filter toggle
   int _numberOfTravelers = 1;
   String? _selectedProvider;
   String? _selectedRegion;
@@ -202,21 +203,48 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Price Range (BHD)"),
-        RangeSlider(
-          values: _priceRange,
-          min: 20,
-          max: 200,
-          divisions: 18,
-          labels: RangeLabels(
-            "${_priceRange.start.toStringAsFixed(2)} BHD",
-            "${_priceRange.end.toStringAsFixed(2)} BHD",
-          ),
-          onChanged: (values) => setState(() => _priceRange = values),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text("Enable Price Filter"),
+            Switch(
+              value: _showPriceFilter,
+              onChanged: (value) {
+                setState(() {
+                  _showPriceFilter = value;
+                  if (!_showPriceFilter) {
+                    _priceRange = const RangeValues(20, 200); // Reset if disabled
+                  }
+                });
+              },
+            ),
+          ],
         ),
+        if (_showPriceFilter) ...[
+          const Text("Price Range (BHD)"),
+          RangeSlider(
+            values: _priceRange,
+            min: 20,
+            max: 200,
+            divisions: 18,
+            labels: RangeLabels(
+              "${_priceRange.start.toStringAsFixed(2)} BHD",
+              "${_priceRange.end.toStringAsFixed(2)} BHD",
+            ),
+            onChanged: (values) {
+              setState(() {
+                _priceRange = values;
+              });
+            },
+          ),
+          Text(
+            "Selected Range: ${_priceRange.start.toStringAsFixed(2)} BHD - ${_priceRange.end.toStringAsFixed(2)} BHD",
+          ),
+        ],
       ],
     );
   }
+
 
   Widget _buildDropdown(String label, String? value, List<String> items,
       ValueChanged<String?> onChanged) {
