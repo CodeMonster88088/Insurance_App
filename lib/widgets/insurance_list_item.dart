@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import  'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:flutter_app_test/screens/activate_policy_screen.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/insurance_model.dart';
 
 class InsuranceListItem extends StatelessWidget {
@@ -9,56 +10,66 @@ class InsuranceListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Provider Name (Title)
-            Text(
-              insurance.provider,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ActivatePolicyScreen(insurance: insurance),
+          ),
+        );
+      },
+      child: Card(
+        elevation: 4,
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Provider Name (Title)
+              Text(
+                insurance.provider,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const Divider(thickness: 1, height: 12),
+              const Divider(thickness: 1, height: 12),
 
-            // Row of Details (Duration, Region, Travelers)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildDetail(LucideIcons.calendarDays, '${insurance.duration} days'),
-                _buildDetail(LucideIcons.map, insurance.region),
-                _buildDetail(LucideIcons.users, '${insurance.numberOfTravelers}'),
-              ],
-            ),
+              // Row of Details (Duration, Region, Travelers)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildDetail(LucideIcons.calendarDays, '${insurance.duration} days'),
+                  _buildDetail(LucideIcons.map, insurance.region),
+                  _buildDetail(LucideIcons.users, '${insurance.numberOfTravelers}'),
+                ],
+              ),
 
-            const SizedBox(height: 10),
+              const SizedBox(height: 10),
 
-            // Price Section (Highlighted)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Price:',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                ),
-                Text(
-                  '${insurance.price.toStringAsFixed(2)} BHD',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green,
+              // Price Section (Highlighted)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Price:',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
-                ),
-              ],
-            ),
-          ],
+                  Text(
+                    '${insurance.price.toStringAsFixed(2)} BHD',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

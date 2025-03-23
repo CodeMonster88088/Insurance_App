@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_test/screens/active_policies_screen.dart';
 import 'package:flutter_app_test/screens/insurance_search_filter.dart';
 import 'package:flutter_app_test/screens/login_screen.dart';
 import 'signup.dart';
@@ -10,14 +11,19 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  late List<Widget> _pages;
 
-  // List of pages for navigation
-  final List<Widget> _pages = [
-    Center(child: Text("Home Page Content")), // Replace with actual content
-    InsuranceSearchFilter(),
-    LoginScreen(),
-    Signup(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      Center(child: Text("Home Page Content", style: TextStyle(fontSize: 18))),
+      InsuranceSearchFilter(),
+      LoginScreen(),
+      Signup(),
+      ActivePoliciesScreen(),
+    ];
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -53,7 +59,7 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: Icon(Icons.dark_mode, color: Colors.white),
             onPressed: () {
-              // Add dark mode toggle functionality
+              // TODO: Implement dark mode toggle
             },
           ),
         ],
@@ -61,17 +67,18 @@ class _HomePageState extends State<HomePage> {
       body: _pages[_selectedIndex],
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Call emergency contact
+          // TODO: Implement emergency call functionality
         },
         backgroundColor: Colors.red,
         child: Icon(Icons.emergency, color: Colors.white),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: [
+        items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(icon: Icon(Icons.login), label: 'Login'),
           BottomNavigationBarItem(icon: Icon(Icons.person_add), label: 'Sign Up'),
+          BottomNavigationBarItem(icon: Icon(Icons.check_box), label: 'Active Policies'),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.blue[800],

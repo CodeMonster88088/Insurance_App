@@ -1,5 +1,4 @@
 import 'package:flutter_app_test/data/sample_data.dart';
-import '../models/insurance_model.dart';
 
 
 // Extract unique providers dynamically
