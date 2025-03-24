@@ -1,4 +1,4 @@
-import '../models/insurance_model.dart';
+import '../models/insurance_model.dart'; // Ensure this import is present
 
 final List<InsuranceModel> sampleInsuranceData = [
   InsuranceModel(
@@ -9,6 +9,10 @@ final List<InsuranceModel> sampleInsuranceData = [
     numberOfTravelers: 2,
     price: 50.0,
     region: 'Europe',
+    coverage: 'Full Coverage', // New field
+    benefits: '24/7 Support, Medical Coverage, etc.', // New field
+    destination: 'Paris, France', // Add this field
+    duration: 10, // Add this field
   ),
   InsuranceModel(
     id: 2,
@@ -18,6 +22,10 @@ final List<InsuranceModel> sampleInsuranceData = [
     numberOfTravelers: 4,
     price: 120.0,
     region: 'Middle East',
+    coverage: 'Partial Coverage', // New field
+    benefits: 'Dental Coverage, Emergency Care, etc.', // New field
+    destination: 'Dubai, UAE', // Add this field
+    duration: 10, // Add this field
   ),
   InsuranceModel(
     id: 3,
@@ -27,6 +35,10 @@ final List<InsuranceModel> sampleInsuranceData = [
     numberOfTravelers: 1,
     price: 80.0,
     region: 'Asia',
+    coverage: 'Full Coverage', // New field
+    benefits: '24/7 Support, Medical Coverage, etc.', // New field
+    destination: 'Tokyo, Japan', // Add this field
+    duration: 15, // Add this field
   ),
   InsuranceModel(
     id: 4,
@@ -36,6 +48,10 @@ final List<InsuranceModel> sampleInsuranceData = [
     numberOfTravelers: 3,
     price: 90.0,
     region: 'Africa',
+    coverage: 'Partial Coverage', // New field
+    benefits: 'Dental Coverage, Emergency Care, etc.', // New field
+    destination: 'Cairo, Egypt', // Add this field
+    duration: 10, // Add this field
   ),
   InsuranceModel(
     id: 5,
@@ -45,6 +61,10 @@ final List<InsuranceModel> sampleInsuranceData = [
     numberOfTravelers: 2,
     price: 75.0,
     region: 'North America',
+    coverage: 'Full Coverage', // New field
+    benefits: '24/7 Support, Medical Coverage, etc.', // New field
+    destination: 'New York, USA', // Add this field
+    duration: 14, // Add this field
   ),
   InsuranceModel(
     id: 6,
@@ -54,6 +74,10 @@ final List<InsuranceModel> sampleInsuranceData = [
     numberOfTravelers: 5,
     price: 150.0,
     region: 'South America',
+    coverage: 'Partial Coverage', // New field
+    benefits: 'Dental Coverage, Emergency Care, etc.', // New field
+    destination: 'Rio de Janeiro, Brazil', // Add this field
+    duration: 10, // Add this field
   ),
   InsuranceModel(
     id: 7,
@@ -63,6 +87,10 @@ final List<InsuranceModel> sampleInsuranceData = [
     numberOfTravelers: 1,
     price: 60.0,
     region: 'Europe',
+    coverage: 'Full Coverage', // New field
+    benefits: '24/7 Support, Medical Coverage, etc.', // New field
+    destination: 'Berlin, Germany', // Add this field
+    duration: 10, // Add this field
   ),
   InsuranceModel(
     id: 8,
@@ -72,6 +100,10 @@ final List<InsuranceModel> sampleInsuranceData = [
     numberOfTravelers: 4,
     price: 110.0,
     region: 'Middle East',
+    coverage: 'Partial Coverage', // New field
+    benefits: 'Dental Coverage, Emergency Care, etc.', // New field
+    destination: 'Riyadh, Saudi Arabia', // Add this field
+    duration: 10, // Add this field
   ),
   InsuranceModel(
     id: 9,
@@ -81,6 +113,10 @@ final List<InsuranceModel> sampleInsuranceData = [
     numberOfTravelers: 2,
     price: 85.0,
     region: 'Asia',
+    coverage: 'Full Coverage', // New field
+    benefits: '24/7 Support, Medical Coverage, etc.', // New field
+    destination: 'Beijing, China', // Add this field
+    duration: 10, // Add this field
   ),
   InsuranceModel(
     id: 10,
@@ -90,6 +126,10 @@ final List<InsuranceModel> sampleInsuranceData = [
     numberOfTravelers: 3,
     price: 95.0,
     region: 'Africa',
+    coverage: 'Partial Coverage', // New field
+    benefits: 'Dental Coverage, Emergency Care, etc.', // New field
+    destination: 'Nairobi, Kenya', // Add this field
+    duration: 10, // Add this field
   ),
   InsuranceModel(
     id: 11,
@@ -99,6 +139,10 @@ final List<InsuranceModel> sampleInsuranceData = [
     numberOfTravelers: 1,
     price: 70.0,
     region: 'North America',
+    coverage: 'Full Coverage', // New field
+    benefits: '24/7 Support, Medical Coverage, etc.', // New field
+    destination: 'Toronto, Canada', // Add this field
+    duration: 10, // Add this field
   ),
   InsuranceModel(
     id: 12,
@@ -108,6 +152,10 @@ final List<InsuranceModel> sampleInsuranceData = [
     numberOfTravelers: 4,
     price: 130.0,
     region: 'South America',
+    coverage: 'Partial Coverage', // New field
+    benefits: 'Dental Coverage, Emergency Care, etc.', // New field
+    destination: 'Buenos Aires, Argentina', // Add this field
+    duration: 10, // Add this field
   ),
   InsuranceModel(
     id: 13,
@@ -117,6 +165,10 @@ final List<InsuranceModel> sampleInsuranceData = [
     numberOfTravelers: 2,
     price: 55.0,
     region: 'Europe',
+    coverage: 'Full Coverage', // New field
+    benefits: '24/7 Support, Medical Coverage, etc.', // New field
+    destination: 'Madrid, Spain', // Add this field
+    duration: 10, // Add this field
   ),
   InsuranceModel(
     id: 14,
@@ -126,6 +178,10 @@ final List<InsuranceModel> sampleInsuranceData = [
     numberOfTravelers: 3,
     price: 100.0,
     region: 'Middle East',
+    coverage: 'Partial Coverage', // New field
+    benefits: 'Dental Coverage, Emergency Care, etc.', // New field
+    destination: 'Doha, Qatar', // Add this field
+    duration: 10, // Add this field
   ),
   InsuranceModel(
     id: 15,
@@ -135,6 +191,10 @@ final List<InsuranceModel> sampleInsuranceData = [
     numberOfTravelers: 1,
     price: 65.0,
     region: 'Asia',
+    coverage: 'Full Coverage', // New field
+    benefits: '24/7 Support, Medical Coverage, etc.', // New field
+    destination: 'Seoul, South Korea', // Add this field
+    duration: 10, // Add this field
   ),
 ];
 

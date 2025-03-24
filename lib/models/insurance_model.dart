@@ -6,6 +6,10 @@ class InsuranceModel {
   final int numberOfTravelers;
   final double price;
   final String region;
+  final String coverage; // New field
+  final String benefits; // New field
+  final String destination; // Add this field
+  final int duration; // Add this field
 
   InsuranceModel({
     required this.id,
@@ -15,6 +19,10 @@ class InsuranceModel {
     required this.numberOfTravelers,
     required this.price,
     required this.region,
+    required this.coverage,
+    required this.benefits,
+    required this.destination, // Add this field
+    required this.duration, // Add this field
   });
 
   // Factory method to create an InsuranceModel from a Map
@@ -27,6 +35,10 @@ class InsuranceModel {
       numberOfTravelers: map['numberOfTravelers'],
       price: map['price'].toDouble(),
       region: map['region'],
+      coverage: map['coverage'], // New field
+      benefits: map['benefits'], // New field
+      destination: map['destination'], // Add this field
+      duration: map['duration'], // Add this field
     );
   }
 
@@ -40,6 +52,10 @@ class InsuranceModel {
       'numberOfTravelers': numberOfTravelers,
       'price': price,
       'region': region,
+      'coverage': coverage, // New field
+      'benefits': benefits, // New field
+      'destination': destination, // Add this field
+      'duration': duration, // Add this field
     };
   }
 
@@ -57,6 +73,10 @@ class InsuranceModel {
     int? numberOfTravelers,
     double? price,
     String? region,
+    String? coverage, // New field
+    String? benefits, // New field
+    String? destination, // Add this field
+    int? duration, // Add this field
   }) {
     return InsuranceModel(
       id: id ?? this.id,
@@ -66,6 +86,10 @@ class InsuranceModel {
       numberOfTravelers: numberOfTravelers ?? this.numberOfTravelers,
       price: price ?? this.price,
       region: region ?? this.region,
+      coverage: coverage ?? this.coverage, // New field
+      benefits: benefits ?? this.benefits, // New field
+      destination: destination ?? this.destination, // Add this field
+      duration: duration ?? this.duration, // Add this field
     );
   }
 
@@ -79,7 +103,11 @@ class InsuranceModel {
         other.toDate == toDate &&
         other.numberOfTravelers == numberOfTravelers &&
         other.price == price &&
-        other.region == region;
+        other.region == region &&
+        other.coverage == coverage && // New field
+        other.benefits == benefits && // New field
+        other.destination == destination && // Add this field
+        other.duration == duration; // Add this field
   }
 
   @override
@@ -90,15 +118,15 @@ class InsuranceModel {
         toDate.hashCode ^
         numberOfTravelers.hashCode ^
         price.hashCode ^
-        region.hashCode;
+        region.hashCode ^
+        coverage.hashCode ^ // New field
+        benefits.hashCode ^ // New field
+        destination.hashCode ^ // Add this field
+        duration.hashCode; // Add this field
   }
-
-  get destination => null;
-
-  get duration => null;
 
   @override
   String toString() {
-    return 'InsuranceModel(id: $id, provider: $provider, fromDate: $fromDate, toDate: $toDate, numberOfTravelers: $numberOfTravelers, price: $price, region: $region)';
+    return 'InsuranceModel(id: $id, provider: $provider, fromDate: $fromDate, toDate: $toDate, numberOfTravelers: $numberOfTravelers, price: $price, region: $region, coverage: $coverage, benefits: $benefits, destination: $destination, duration: $duration)';
   }
 }

@@ -19,7 +19,7 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
   String _searchQuery = "";
   bool _isLoading = false;
   String? _selectedRegion;
-  bool _showPriceFilter = false; // Add this line
+  bool _showPriceFilter = false;
 
   Future<void> _selectFromDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -62,13 +62,12 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
 
     await Future.delayed(Duration(milliseconds: 500)); // Simulate delay
 
-    // Call the filterInsuranceData function with only the applied filters
     List<InsuranceModel> filteredResults = filterInsuranceData(
       fromDate: _fromDate,
       toDate: _toDate,
       numberOfTravelers: _numberOfTravelers,
       maxPrice: _maxPrice,
-      region: _selectedRegion, // Add this if you have a region filter
+      region: _selectedRegion,
       searchQuery: _searchQuery,
     );
 
@@ -85,7 +84,7 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
       _numberOfTravelers = 1;
       _maxPrice = 100.0;
       _searchQuery = "";
-      _selectedRegion = null; // Clear region filter
+      _selectedRegion = null;
       _filteredData = sampleInsuranceData;
     });
   }
@@ -192,7 +191,7 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
                     ),
                     Text('Max Price: ${_maxPrice.toStringAsFixed(2)} BHD'),
                   ],
-                  // Region Dropdown (Add this if you have a region filter)
+                  // Region Dropdown
                   DropdownButton<String>(
                     value: _selectedRegion,
                     hint: Text('Select Region'),

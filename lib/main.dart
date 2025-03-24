@@ -383,5 +383,3 @@ class InsuranceListItem extends StatelessWidget {
     );
   }
 }
-
-

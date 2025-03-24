@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; 
-import '../models/insurance_model.dart';
+import 'package:intl/intl.dart';
+import '../models/insurance_model.dart'; // Import the InsuranceModel
+import '../screens/policy_details_page.dart'; // If the file is in a different directory
 
 class InsuranceListItem extends StatelessWidget {
   final InsuranceModel insurance;
@@ -36,6 +37,20 @@ class InsuranceListItem extends StatelessWidget {
             ),
           ],
         ),
+        onTap: () {
+          // Navigate to PolicyDetailsPage with insurance details
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PolicyDetailsPage(
+                policyName: insurance.provider,
+                coverage: insurance.coverage, // Use the new field
+                premium: insurance.price,
+                benefits: insurance.benefits, // Use the new field
+              ),
+            ),
+          );
+        },
       ),
     );
   }
