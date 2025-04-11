@@ -3,7 +3,6 @@ import 'package:flutter_app_test/screens/active_policies_screen.dart';
 import 'package:flutter_app_test/screens/insurance_search_filter.dart';
 import 'package:flutter_app_test/screens/login_screen.dart';
 import 'signup.dart';
-import 'package:flutter_app_test/screens/claims_screen.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -21,10 +20,7 @@ class _HomePageState extends State<HomePage> {
       _buildHomeContent(),       // Index 0 - Home
       InsuranceSearchFilter(),   // Index 1 - Search
       ActivePoliciesScreen(),    // Index 2 - Policies
-      _buildEmergencyScreen(),   // Index 3 - Emergency
-      _buildDocumentsScreen(),   // Index 4 - Documents
-      _buildFinanceScreen(),     // Index 5 - Finance
-      _buildHelpCenterScreen(),  // Index 6 - Help Center
+      _buildHelpCenterScreen(),  // Index 3 - Help Center
     ];
   }
 
@@ -106,18 +102,6 @@ class _HomePageState extends State<HomePage> {
                     });
                   },
                 ),
-                SizedBox(height: 16),
-                _buildFeatureItem(
-                  icon: Icons.emergency,
-                  title: 'Emergency',
-                  subtitle: 'Get immediate assistance',
-                  color: Colors.red,
-                  onTap: () {
-                    setState(() {
-                      _selectedIndex = 3;
-                    });
-                  },
-                ),
               ],
             ),
           ),
@@ -135,28 +119,6 @@ class _HomePageState extends State<HomePage> {
                     fontWeight: FontWeight.bold,
                     color: Colors.blue[900],
                   ),
-                ),
-                SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildServiceCard(
-                        icon: Icons.medical_services,
-                        title: 'Health Alerts',
-                        color: Colors.orange,
-                        onTap: () {},
-                      ),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: _buildServiceCard(
-                        icon: Icons.local_hospital,
-                        title: 'Nearby Hospitals',
-                        color: Colors.red,
-                        onTap: () {},
-                      ),
-                    ),
-                  ],
                 ),
                 SizedBox(height: 16),
                 _buildServiceCard(
@@ -203,10 +165,6 @@ class _HomePageState extends State<HomePage> {
                     _buildSimpleFeatureItem(
                       icon: Icons.health_and_safety,
                       title: 'Comprehensive Coverage',
-                    ),
-                    _buildSimpleFeatureItem(
-                      icon: Icons.assignment_turned_in,
-                      title: 'Easy Claims Process',
                     ),
                     _buildSimpleFeatureItem(
                       icon: Icons.attach_money,
@@ -450,18 +408,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildEmergencyScreen() {
-    return Center(child: Text('Emergency Screen'));
-  }
-
-  Widget _buildDocumentsScreen() {
-    return Center(child: Text('Documents Screen'));
-  }
-
-  Widget _buildFinanceScreen() {
-    return Center(child: Text('Finance Screen'));
-  }
-
   Widget _buildHelpCenterScreen() {
     return Center(child: Text('Help Center Screen'));
   }
@@ -500,31 +446,9 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-          // Removed Home and Search Insurance from here
-          ListTile(
-            leading: Icon(Icons.assignment),
-            title: Text('Claims'),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.support_agent),
-            title: Text('Support'),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
           ListTile(
             leading: Icon(Icons.account_circle),
             title: Text('Profile'),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.notifications),
-            title: Text('Notifications'),
             onTap: () {
               Navigator.pop(context);
             },
@@ -609,18 +533,6 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.check_box),
             label: 'Policies',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.emergency),
-            label: 'Emergency',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.description),
-            label: 'Documents',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.attach_money),
-            label: 'Finance',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.help_center),
