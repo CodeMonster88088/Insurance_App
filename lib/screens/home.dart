@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_test/screens/active_policies_screen.dart';
 import 'package:flutter_app_test/screens/insurance_search_filter.dart';
 import 'package:flutter_app_test/screens/login_screen.dart';
+import 'package:flutter_app_test/screens/profile_screen.dart';
+import 'package:flutter_app_test/screens/settings_screen.dart';
 import 'signup.dart';
 
 class HomePage extends StatefulWidget {
@@ -17,10 +19,10 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _pages = [
-      _buildHomeContent(),       // Index 0 - Home
-      InsuranceSearchFilter(),   // Index 1 - Search
-      ActivePoliciesScreen(),    // Index 2 - Policies
-      _buildHelpCenterScreen(),  // Index 3 - Help Center
+      _buildHomeContent(),
+      InsuranceSearchFilter(),
+      ActivePoliciesScreen(),
+      _buildHelpCenterScreen(),
     ];
   }
 
@@ -28,13 +30,11 @@ class _HomePageState extends State<HomePage> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          // Hero Section
           Container(
             height: 300,
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: NetworkImage(
-                    'https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg'),
+                image: NetworkImage('https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -63,8 +63,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-
-          // Quick Access Section
           Padding(
             padding: EdgeInsets.all(16),
             child: Column(
@@ -84,11 +82,7 @@ class _HomePageState extends State<HomePage> {
                   title: 'Find Insurance',
                   subtitle: 'Browse and compare insurance plans',
                   color: Colors.blue,
-                  onTap: () {
-                    setState(() {
-                      _selectedIndex = 1;
-                    });
-                  },
+                  onTap: () => setState(() => _selectedIndex = 1),
                 ),
                 SizedBox(height: 16),
                 _buildFeatureItem(
@@ -96,17 +90,11 @@ class _HomePageState extends State<HomePage> {
                   title: 'My Policies',
                   subtitle: 'View your active insurance policies',
                   color: Colors.green,
-                  onTap: () {
-                    setState(() {
-                      _selectedIndex = 2;
-                    });
-                  },
+                  onTap: () => setState(() => _selectedIndex = 2),
                 ),
               ],
             ),
           ),
-
-          // Health Services Section
           Padding(
             padding: EdgeInsets.all(16),
             child: Column(
@@ -132,14 +120,10 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-
-          // Key Features Section
           Container(
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
                 colors: [Colors.blue[50]!, Colors.white],
               ),
             ),
@@ -175,41 +159,113 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
 
-          // Testimonials Section
-          Container(
-            padding: EdgeInsets.all(20),
-            color: Colors.grey[50],
-            child: Column(
-              children: [
-                Text(
-                  'What Our Customers Say',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue[900],
+  Widget _buildHelpCenterScreen() {
+    return Scaffold(
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 200.0,
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text('Help Center'),
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blue[800]!, Colors.blue[600]!],
                   ),
                 ),
-                SizedBox(height: 20),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildFancyTestimonialCard(
-                        name: 'John Doe',
-                        review: 'Great service! They helped me during my trip to Europe when I needed emergency care.',
-                        rating: 5,
+              ),
+            ),
+            pinned: true,
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 6,
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Search help articles...',
+                        prefixIcon: Icon(Icons.search, color: Colors.blue),
+                        border: InputBorder.none,
                       ),
-                      SizedBox(width: 16),
-                      _buildFancyTestimonialCard(
-                        name: 'Jane Smith',
-                        review: 'Affordable plans and quick claims processing. Highly recommended!',
-                        rating: 4,
+                    ),
+                  ),
+                  SizedBox(height: 24),
+                  Text(
+                    'Quick Help',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  GridView.count(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    children: [
+                      _buildHelpOption(
+                        icon: Icons.article,
+                        title: 'FAQs',
+                        color: Colors.blue,
+                        onTap: () => _showFAQSection(context),
+                      ),
+                      _buildHelpOption(
+                        icon: Icons.phone,
+                        title: 'Call Us',
+                        color: Colors.green,
+                        onTap: () => _showCallSupportDialog(context),
+                      ),
+                      _buildHelpOption(
+                        icon: Icons.email,
+                        title: 'Email Us',
+                        color: Colors.orange,
+                        onTap: () => _showEmailSupportDialog(context),
                       ),
                     ],
                   ),
-                ),
-              ],
+                  SizedBox(height: 24),
+                  Text(
+                    'Popular Articles',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final articles = [
+                  {'title': 'Understanding your policy', 'category': 'Policies'},
+                  {'title': 'Adding family members', 'category': 'Account'},
+                  {'title': 'International coverage', 'category': 'Coverage'},
+                ];
+                return _buildArticleItem(
+                  title: articles[index]['title']!,
+                  category: articles[index]['category']!,
+                );
+              },
+              childCount: 3,
             ),
           ),
         ],
@@ -217,61 +273,113 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildFancyTestimonialCard({
-    required String name,
-    required String review,
-    required int rating,
-  }) {
-    return Container(
-      width: 280,
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.account_circle, size: 40, color: Colors.blue),
-              SizedBox(width: 10),
-              Text(
-                name,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 10),
-          Text(
-            review,
-            style: TextStyle(
-              fontStyle: FontStyle.italic,
-              color: Colors.grey[700],
+  void _showCallSupportDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Call Support'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Please call one of our support numbers:'),
+            SizedBox(height: 20),
+            _buildContactInfoTile(
+              icon: Icons.phone,
+              title: 'General Inquiries',
+              number: '+1 (800) 123-4567',
             ),
-          ),
-          SizedBox(height: 10),
-          Row(
-            children: List.generate(5, (index) {
-              return Icon(
-                index < rating ? Icons.star : Icons.star_border,
-                color: Colors.amber,
-                size: 20,
-              );
-            }),
+            _buildContactInfoTile(
+              icon: Icons.medical_services,
+              title: 'Medical Emergencies',
+              number: '+1 (800) 987-6543',
+            ),
+            _buildContactInfoTile(
+              icon: Icons.account_balance,
+              title: 'Billing Questions',
+              number: '+1 (800) 555-1212',
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildContactInfoTile({
+    required IconData icon,
+    required String title,
+    required String number,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.blue),
+      title: Text(title),
+      subtitle: Text(number),
+      onTap: () {
+        // Copy to clipboard functionality could be added here
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Phone number copied to clipboard: $number')),
+        );
+      },
+    );
+  }
+
+  void _showEmailSupportDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Email Support'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Please contact us at one of these email addresses:'),
+            SizedBox(height: 20),
+            _buildEmailInfoTile(
+              icon: Icons.email,
+              title: 'General Inquiries',
+              email: 'support@amaaninsurance.com',
+            ),
+            _buildEmailInfoTile(
+              icon: Icons.medical_services,
+              title: 'Claims Department',
+              email: 'claims@amaaninsurance.com',
+            ),
+            _buildEmailInfoTile(
+              icon: Icons.account_balance,
+              title: 'Billing Questions',
+              email: 'billing@amaaninsurance.com',
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmailInfoTile({
+    required IconData icon,
+    required String title,
+    required String email,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.blue),
+      title: Text(title),
+      subtitle: Text(email),
+      onTap: () {
+        // Copy to clipboard functionality could be added here
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Email copied to clipboard: $email')),
+        );
+      },
     );
   }
 
@@ -408,8 +516,72 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildHelpCenterScreen() {
-    return Center(child: Text('Help Center Screen'));
+  Widget _buildHelpOption({
+    required IconData icon,
+    required String title,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 36, color: color),
+            SizedBox(height: 8),
+            Text(title),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildArticleItem({required String title, required String category}) {
+    return ListTile(
+      leading: Icon(Icons.article, color: Colors.blue),
+      title: Text(title),
+      subtitle: Text(category),
+    );
+  }
+
+  void _showFAQSection(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Container(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            children: [
+              Text('Frequently Asked Questions', 
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Expanded(
+                child: ListView(
+                  children: [
+                    ListTile(
+                      title: Text('How do I update my personal information?'),
+                      subtitle: Text('You can update your details in the Profile section'),
+                    ),
+                    ListTile(
+                      title: Text('What should I do if I lose my insurance card?'),
+                      subtitle: Text('Contact customer support for a replacement'),
+                    ),
+                    ListTile(
+                      title: Text('How do I add a family member to my plan?'),
+                      subtitle: Text('Use the account settings or contact support'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildDrawer() {
@@ -451,6 +623,10 @@ class _HomePageState extends State<HomePage> {
             title: Text('Profile'),
             onTap: () {
               Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProfileScreen()),
+              );
             },
           ),
           ListTile(
@@ -458,6 +634,10 @@ class _HomePageState extends State<HomePage> {
             title: Text('Settings'),
             onTap: () {
               Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingsScreen()),
+              );
             },
           ),
           Divider(),
@@ -474,12 +654,6 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
   }
 
   @override
@@ -503,17 +677,7 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
             icon: Icon(Icons.search, color: Colors.white),
-            onPressed: () {
-              setState(() {
-                _selectedIndex = 1;
-              });
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.dark_mode, color: Colors.white),
-            onPressed: () {
-              // TODO: Implement dark mode toggle
-            },
+            onPressed: () => setState(() => _selectedIndex = 1),
           ),
         ],
       ),
@@ -542,7 +706,7 @@ class _HomePageState extends State<HomePage> {
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.blue[800],
         unselectedItemColor: Colors.grey,
-        onTap: _onItemTapped,
+        onTap: (index) => setState(() => _selectedIndex = index),
       ),
     );
   }
