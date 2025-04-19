@@ -10,9 +10,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Settings App',
-      theme: _lightTheme,
-      darkTheme: _darkTheme,
-      themeMode: ThemeMode.system,
       home: SettingsScreen(),
     );
   }
@@ -24,13 +21,9 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _biometricAuthEnabled = false;
-  String _selectedLanguage = 'English';
   bool _simpleModeEnabled = false;
-  bool _darkModeEnabled = false;
   bool _notificationsEnabled = true;
   bool _dailyRemindersEnabled = false;
-  double _fontSize = 16.0;
   String _backupFrequency = 'Weekly';
   bool _cloudBackupEnabled = true;
   bool _analyticsEnabled = true;
@@ -72,20 +65,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildSettingsCard(
               children: [
                 _buildSettingsItem(
-                  icon: Icons.brightness_6,
-                  iconColor: Colors.amber,
-                  title: 'Dark Mode',
-                  subtitle: _darkModeEnabled ? 'Dark' : 'Light',
-                  trailing: Switch(
-                    value: _darkModeEnabled,
-                    activeColor: Colors.amber,
-                    onChanged: (value) {
-                      setState(() => _darkModeEnabled = value);
-                    },
-                  ),
-                ),
-                Divider(height: 1, thickness: 0.5),
-                _buildSettingsItem(
                   icon: Icons.view_agenda,
                   iconColor: Colors.blue,
                   title: 'Simple Mode',
@@ -98,50 +77,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     },
                   ),
                 ),
-                Divider(height: 1, thickness: 0.5),
-                _buildSettingsItem(
-                  icon: Icons.language,
-                  iconColor: Colors.green,
-                  title: 'Language',
-                  subtitle: _selectedLanguage,
-                  trailing: DropdownButton<String>(
-                    value: _selectedLanguage,
-                    underline: Container(),
-                    dropdownColor: Theme.of(context).cardColor,
-                    icon: Icon(Icons.arrow_drop_down, color: Colors.grey),
-                    items: ['English', 'Arabic', 'Hindi', 'Urdu']
-                        .map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (newValue) {
-                      setState(() => _selectedLanguage = newValue!);
-                    },
-                  ),
-                ),
-                if (!_simpleModeEnabled) Divider(height: 1, thickness: 0.5),
-                if (!_simpleModeEnabled)
-                  _buildSettingsItem(
-                    icon: Icons.format_size,
-                    iconColor: Colors.teal,
-                    title: 'Font Size',
-                    subtitle: '${_fontSize.toStringAsFixed(1)} pt',
-                    trailing: SizedBox(
-                      width: 120,
-                      child: Slider(
-                        value: _fontSize,
-                        min: 12.0,
-                        max: 24.0,
-                        divisions: 12,
-                        label: _fontSize.toStringAsFixed(1),
-                        onChanged: (value) {
-                          setState(() => _fontSize = value);
-                        },
-                      ),
-                    ),
-                  ),
               ],
             ),
             SizedBox(height: 24),
@@ -181,7 +116,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             SizedBox(height: 24),
             if (!_simpleModeEnabled) ...[
-              _buildSectionHeader('SECURITY & PRIVACY'),
+              _buildSectionHeader('SECURITY'),
               SizedBox(height: 12),
               _buildSettingsCard(
                 children: [
@@ -192,19 +127,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onTap: () {
                       _showChangePasswordDialog(context);
                     },
-                  ),
-                  Divider(height: 1, thickness: 0.5),
-                  _buildSettingsItem(
-                    icon: Icons.fingerprint,
-                    iconColor: Colors.red,
-                    title: 'Biometric Authentication',
-                    trailing: Switch(
-                      value: _biometricAuthEnabled,
-                      activeColor: Colors.red,
-                      onChanged: (value) {
-                        setState(() => _biometricAuthEnabled = value);
-                      },
-                    ),
                   ),
                   Divider(height: 1, thickness: 0.5),
                   _buildSettingsItem(
@@ -392,11 +314,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               CircleAvatar(
                 radius: 30,
-                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                backgroundColor: Colors.blue[100],
                 child: Icon(
                   Icons.person,
                   size: 30,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  color: Colors.blue[800],
                 ),
               ),
               SizedBox(width: 16),
@@ -438,7 +360,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.bold,
-          color: Theme.of(context).colorScheme.primary,
+          color: Colors.blue[800],
           letterSpacing: 1.2,
         ),
       ),
@@ -636,13 +558,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onPressed: () {
               Navigator.pop(context);
               setState(() {
-                _biometricAuthEnabled = false;
-                _selectedLanguage = 'English';
                 _simpleModeEnabled = false;
-                _darkModeEnabled = false;
                 _notificationsEnabled = true;
                 _dailyRemindersEnabled = false;
-                _fontSize = 16.0;
                 _backupFrequency = 'Weekly';
                 _cloudBackupEnabled = true;
                 _analyticsEnabled = true;
@@ -676,7 +594,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Logged out successfully')),
               );
-              // Here you would typically navigate to login screen
             },
             child: Text('Logout', style: TextStyle(color: Colors.white)),
           ),
@@ -697,9 +614,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             border: OutlineInputBorder(),
           ),
           autofocus: true,
-          onChanged: (value) {
-            // Implement search functionality here
-          },
         ),
         actions: [
           TextButton(
@@ -712,14 +626,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _shareApp(BuildContext context) {
-    // Implement actual share functionality
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Sharing app with friends...')),
     );
   }
 
   void _rateApp(BuildContext context) {
-    // Implement actual rate app functionality
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Redirecting to app store...')),
     );
@@ -814,7 +726,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              // Here you would typically update the profile
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Profile updated successfully')),
@@ -827,47 +738,3 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 }
-
-final ThemeData _lightTheme = ThemeData(
-  colorScheme: ColorScheme.light(
-    primary: Colors.blue[800]!,
-    onPrimary: Colors.white,
-    secondary: Colors.purple,
-    onSecondary: Colors.white,
-    primaryContainer: Colors.blue[100]!,
-    onPrimaryContainer: Colors.blue[800]!,
-  ),
-  cardColor: Colors.white,
-  brightness: Brightness.light,
-  appBarTheme: AppBarTheme(
-    backgroundColor: Colors.transparent,
-    titleTextStyle: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
-    iconTheme: IconThemeData(color: Colors.black),
-  ),
-  iconTheme: IconThemeData(color: Colors.black87),
-  textTheme: TextTheme(
-    bodyMedium: TextStyle(color: Colors.black87),
-  ),
-);
-
-final ThemeData _darkTheme = ThemeData(
-  colorScheme: ColorScheme.dark(
-    primary: Colors.blue[200]!,
-    onPrimary: Colors.black,
-    secondary: Colors.purple[200]!,
-    onSecondary: Colors.black,
-    primaryContainer: Colors.blue[800]!,
-    onPrimaryContainer: Colors.white,
-  ),
-  cardColor: Colors.grey[900],
-  brightness: Brightness.dark,
-  appBarTheme: AppBarTheme(
-    backgroundColor: Colors.transparent,
-    titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-    iconTheme: IconThemeData(color: Colors.white),
-  ),
-  iconTheme: IconThemeData(color: Colors.white),
-  textTheme: TextTheme(
-    bodyMedium: TextStyle(color: Colors.white),
-  ),
-);

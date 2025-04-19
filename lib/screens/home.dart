@@ -5,6 +5,37 @@ import 'package:flutter_app_test/screens/login_screen.dart';
 import 'package:flutter_app_test/screens/profile_screen.dart';
 import 'package:flutter_app_test/screens/settings_screen.dart';
 
+// Placeholder for company screens (replace with your actual implementations)
+class CompanyPoliciesView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Company Policies')),
+      body: Center(child: Text('Company Policies View Content')),
+    );
+  }
+}
+
+class CompanyClaimsView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Company Claims')),
+      body: Center(child: Text('Company Claims View Content')),
+    );
+  }
+}
+
+class CompanyHomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Company Dashboard')),
+      body: Center(child: Text('Company Home Page Content')),
+    );
+  }
+}
+
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
@@ -22,6 +53,9 @@ class _HomePageState extends State<HomePage> {
       InsuranceSearchFilter(),
       ActivePoliciesScreen(),
       _buildHelpCenterScreen(),
+      CompanyPoliciesView(),
+      CompanyClaimsView(),
+      CompanyHomePage(),
     ];
   }
 
@@ -109,7 +143,7 @@ class _HomePageState extends State<HomePage> {
           ),
           SizedBox(height: 20),
 
-          // Quick Actions (updated features)
+          // Quick Actions
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: Row(
@@ -240,7 +274,7 @@ class _HomePageState extends State<HomePage> {
           ),
           SizedBox(height: 30),
 
-          // Features Section (updated features)
+          // Features Section
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: Column(
@@ -400,7 +434,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _contactAgent() {
-    // Simple implementation for contacting an agent
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -994,6 +1027,21 @@ class _HomePageState extends State<HomePage> {
                 icon: Icon(Icons.help_outline_outlined),
                 activeIcon: Icon(Icons.help_center),
                 label: 'Help',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.business_outlined),
+                activeIcon: Icon(Icons.business),
+                label: 'Company Policies',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.receipt_long_outlined),
+                activeIcon: Icon(Icons.receipt_long),
+                label: 'Company Claims',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.dashboard_outlined),
+                activeIcon: Icon(Icons.dashboard),
+                label: 'Company Dashboard',
               ),
             ],
             currentIndex: _selectedIndex,
