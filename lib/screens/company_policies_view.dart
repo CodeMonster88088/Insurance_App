@@ -1,186 +1,194 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Insurance App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: const CompanyPoliciesView(),
+    );
+  }
+}
 
 class CompanyPoliciesView extends StatefulWidget {
+  const CompanyPoliciesView({super.key});
+
   @override
-  _CompanyPoliciesViewState createState() => _CompanyPoliciesViewState();
+  State<CompanyPoliciesView> createState() => _CompanyPoliciesViewState();
 }
 
 class _CompanyPoliciesViewState extends State<CompanyPoliciesView> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  List<Map<String, dynamic>> _policies = [];
-  bool _isLoading = true;
+  final List<Map<String, dynamic>> _policies = [
+    {
+      'policyNumber': 'POL-1001',
+      'status': 'pending',
+      'userData': {
+        'fullName': 'John Smith',
+        'email': 'john.smith@example.com',
+        'phone': '+1 (555) 123-4567',
+        'idNumber': 'ID-789456',
+      },
+      'policyType': 'Health Insurance',
+      'coverageAmount': '500,000',
+      'startDate': '2023-01-01',
+      'endDate': '2024-01-01',
+      'documents': [
+        {'name': 'ID Proof.pdf'},
+        {'name': 'Medical Report.pdf'},
+      ],
+    },
+    {
+      'policyNumber': 'POL-1002',
+      'status': 'pending',
+      'userData': {
+        'fullName': 'Sarah Johnson',
+        'email': 'sarah.j@example.com',
+        'phone': '+1 (555) 987-6543',
+        'idNumber': 'ID-321654',
+      },
+      'policyType': 'Auto Insurance',
+      'coverageAmount': '50,000',
+      'startDate': '2023-03-15',
+      'endDate': '2024-03-15',
+      'documents': [
+        {'name': 'Driver License.pdf'},
+        {'name': 'Vehicle Registration.pdf'},
+      ],
+    },
+  ];
 
   @override
-  void initState() {
-    super.initState();
-    _fetchPolicies();
-  }
-
-  Future<void> _fetchPolicies() async {
-    try {
-      QuerySnapshot snapshot = await _firestore
-          .collection('policies')
-          .where('status', isEqualTo: 'pending')
-          .get();
-
-      List<Map<String, dynamic>> policies = [];
-      for (var doc in snapshot.docs) {
-        DocumentSnapshot userDoc = await _firestore
-            .collection('users')
-            .doc(doc['userId'])
-            .get();
-        
-        if (userDoc.exists) {
-          policies.add({
-            ...doc.data() as Map<String, dynamic>,
-            'id': doc.id,
-            'userData': userDoc.data() as Map<String, dynamic>,
-          });
-        }
-      }
-
-      setState(() {
-        _policies = policies;
-        _isLoading = false;
-      });
-    } catch (e) {
-      print('Error fetching policies: $e');
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading policies: $e')),
-      );
-    }
-  }
-
-  Future<void> _updatePolicyStatus(String policyId, String status) async {
-    try {
-      await _firestore
-          .collection('policies')
-          .doc(policyId)
-          .update({'status': status});
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Policy status updated to $status')),
-      );
-      
-      _fetchPolicies();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update policy: $e')),
-      );
-    }
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Policy Approvals'),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => _showSnackbar(context, 'Refreshing policies...'),
+          ),
+        ],
+      ),
+      body: ListView.builder(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        itemCount: _policies.length,
+        itemBuilder: (context, index) => _buildPolicyCard(_policies[index]),
+      ),
+    );
   }
 
   Widget _buildPolicyCard(Map<String, dynamic> policy) {
-    final userData = policy['userData'] ?? {};
-    final policyData = policy;
-
     return Card(
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: ExpansionTile(
         title: Text(
-          'Policy #${policyData['policyNumber'] ?? 'N/A'}',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          'Policy #${policy['policyNumber']}',
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
         ),
         subtitle: Text(
-          'User: ${userData['fullName'] ?? 'Unknown'} | Status: ${policyData['status'] ?? 'unknown'}',
+          'Status: ${policy['status']}',
+          style: TextStyle(
+            color: _getStatusColor(policy['status']),
+          ),
         ),
         children: [
           Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Personal Information Section
-                _buildSectionHeader('Personal Information'),
-                _buildInfoRow('Full Name', userData['fullName']),
-                _buildInfoRow('Email', userData['email']),
-                _buildInfoRow('Phone', userData['phone']),
-                _buildInfoRow('Date of Birth', userData['dob']),
-                _buildInfoRow('Gender', userData['gender']),
-                _buildInfoRow('Nationality', userData['nationality']),
-                _buildInfoRow('ID Type', userData['idType']),
-                _buildInfoRow('ID Number', userData['idNumber']),
-                _buildInfoRow('ID Expiry', userData['idExpiry']),
-                SizedBox(height: 16),
-
-                // Address Information
-                _buildSectionHeader('Address Information'),
-                _buildInfoRow('Address Line 1', userData['addressLine1']),
-                _buildInfoRow('Address Line 2', userData['addressLine2']),
-                _buildInfoRow('City', userData['city']),
-                _buildInfoRow('State/Province', userData['state']),
-                _buildInfoRow('Postal Code', userData['postalCode']),
-                _buildInfoRow('Country', userData['country']),
-                SizedBox(height: 16),
-
-                // Employment Information
-                _buildSectionHeader('Employment Information'),
-                _buildInfoRow('Occupation', userData['occupation']),
-                _buildInfoRow('Employer Name', userData['employerName']),
-                _buildInfoRow('Annual Income', userData['annualIncome']),
-                _buildInfoRow('Employment Status', userData['employmentStatus']),
-                SizedBox(height: 16),
-
-                // Policy Details
+                _buildSectionHeader('User Information'),
+                _buildInfoRow('Full Name', policy['userData']['fullName']),
+                _buildInfoRow('Email', policy['userData']['email']),
+                _buildInfoRow('Phone', policy['userData']['phone']),
+                _buildInfoRow('ID Number', policy['userData']['idNumber']),
+                const SizedBox(height: 20),
+                
                 _buildSectionHeader('Policy Details'),
-                _buildInfoRow('Policy Type', policyData['policyType']),
-                _buildInfoRow('Coverage Amount', 
-                  policyData['coverageAmount'] != null 
-                    ? '\$${policyData['coverageAmount']}' 
-                    : 'N/A'),
-                _buildInfoRow('Premium Amount', 
-                  policyData['premiumAmount'] != null 
-                    ? '\$${policyData['premiumAmount']}' 
-                    : 'N/A'),
-                _buildInfoRow('Start Date', policyData['startDate']),
-                _buildInfoRow('End Date', policyData['endDate']),
-                _buildInfoRow('Payment Frequency', policyData['paymentFrequency']),
-                SizedBox(height: 16),
-
-                // Documents Section
-                if (policyData['documents'] != null && (policyData['documents'] as List).isNotEmpty)
+                _buildInfoRow('Policy Type', policy['policyType']),
+                _buildInfoRow('Coverage Amount', '\$${policy['coverageAmount']}'),
+                _buildInfoRow('Start Date', policy['startDate']),
+                _buildInfoRow('End Date', policy['endDate']),
+                const SizedBox(height: 20),
+                
+                if (policy['documents'] != null && policy['documents'].isNotEmpty)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildSectionHeader('Attached Documents'),
+                      const SizedBox(height: 8),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: (policyData['documents'] as List).map<Widget>((doc) {
-                          return ActionChip(
-                            label: Text(doc['name'] ?? 'Document'),
-                            onPressed: () {
-                              // Implement document viewing
-                            },
+                        children: policy['documents'].map<Widget>((doc) {
+                          return Card(
+                            elevation: 2,
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.insert_drive_file, color: Colors.blue),
+                                  const SizedBox(width: 8),
+                                  Text(doc['name']),
+                                ],
+                              ),
+                            ),
                           );
                         }).toList(),
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                     ],
                   ),
-
-                // Approval Buttons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red, // Changed from primary to backgroundColor
+                
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red[400],
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: () => _showSnackbar(context, 'Policy rejected'),
+                        child: const Text('Reject', style: TextStyle(fontSize: 16)),
                       ),
-                      onPressed: () => _updatePolicyStatus(policy['id'], 'rejected'),
-                      child: Text('Reject'),
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green, // Changed from primary to backgroundColor
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green[400],
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: () => _showSnackbar(context, 'Policy approved'),
+                        child: const Text('Approve', style: TextStyle(fontSize: 16)),
                       ),
-                      onPressed: () => _updatePolicyStatus(policy['id'], 'active'),
-                      child: Text('Approve'),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -190,15 +198,28 @@ class _CompanyPoliciesViewState extends State<CompanyPoliciesView> {
     );
   }
 
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return Colors.orange;
+      case 'approved':
+        return Colors.green;
+      case 'rejected':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: Colors.blue[800],
+          color: Colors.blue,
         ),
       ),
     );
@@ -206,7 +227,7 @@ class _CompanyPoliciesViewState extends State<CompanyPoliciesView> {
 
   Widget _buildInfoRow(String label, String? value) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -214,43 +235,29 @@ class _CompanyPoliciesViewState extends State<CompanyPoliciesView> {
             width: 120,
             child: Text(
               '$label:',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[700],
+              ),
             ),
           ),
           Expanded(
-            child: Text(value ?? 'Not provided'),
+            child: Text(
+              value ?? 'Not provided',
+              style: const TextStyle(fontSize: 16),
+            ),
           ),
         ],
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Policy Approvals'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: _fetchPolicies,
-          ),
-        ],
+  void _showSnackbar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : _policies.isEmpty
-              ? Center(child: Text('No pending policies to review'))
-              : RefreshIndicator(
-                  onRefresh: _fetchPolicies,
-                  child: ListView.builder(
-                    padding: EdgeInsets.symmetric(vertical: 8),
-                    itemCount: _policies.length,
-                    itemBuilder: (context, index) {
-                      return _buildPolicyCard(_policies[index]);
-                    },
-                  ),
-                ),
     );
   }
 }
