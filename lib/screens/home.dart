@@ -6,37 +6,7 @@ import 'package:flutter_app_test/screens/profile_screen.dart';
 import 'package:flutter_app_test/screens/settings_screen.dart';
 import 'package:flutter_app_test/screens/company_claims_view.dart';
 import 'package:flutter_app_test/screens/company_policies_view.dart';
-import 'package:flutter_app_test/screens/company_home.dart'; // Make sure this exists
-// Placeholder for company screens (replace with your actual implementations)
-class CompanyPoliciesView extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Company Policies')),
-      body: Center(child: Text('Company Policies View Content')),
-    );
-  }
-}
-
-class CompanyClaimsView extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Company Claims')),
-      body: Center(child: Text('Company Claims View Content')),
-    );
-  }
-}
-
-class CompanyHomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Company Dashboard')),
-      body: Center(child: Text('Company Home Page Content')),
-    );
-  }
-}
+import 'package:flutter_app_test/screens/company_home.dart';
 
 class HomePage extends StatefulWidget {
   @override
