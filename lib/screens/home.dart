@@ -4,7 +4,9 @@ import 'package:flutter_app_test/screens/insurance_search_filter.dart';
 import 'package:flutter_app_test/screens/login_screen.dart';
 import 'package:flutter_app_test/screens/profile_screen.dart';
 import 'package:flutter_app_test/screens/settings_screen.dart';
-
+import 'package:flutter_app_test/screens/company_claims_view.dart';
+import 'package:flutter_app_test/screens/company_policies_view.dart';
+import 'package:flutter_app_test/screens/company_home.dart'; // Make sure this exists
 // Placeholder for company screens (replace with your actual implementations)
 class CompanyPoliciesView extends StatelessWidget {
   @override
