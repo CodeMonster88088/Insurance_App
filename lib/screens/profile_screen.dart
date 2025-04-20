@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_test/screens/login_screen.dart';
+import 'package:flutter_app_test/screens/personal_info_screen.dart';
+import 'package:flutter_app_test/screens/privacy_settings_screen.dart';
+import 'package:flutter_app_test/screens/notifications_screen.dart';
+import 'package:flutter_app_test/screens/policies_screen.dart';
+import 'package:flutter_app_test/screens/policy_history_screen.dart';
+import 'package:flutter_app_test/screens/support_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   @override
@@ -47,7 +53,7 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           
-                    // Profile Sections
+          // Profile Sections
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             sliver: SliverList(
@@ -123,6 +129,7 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
+
   Widget _buildProfileHeader(BuildContext context, bool isDarkMode, Color primaryColor, Color surfaceColor) {
     return Container(
       height: 220,
@@ -171,29 +178,6 @@ class ProfileScreen extends StatelessWidget {
                   radius: 60,
                   backgroundColor: Colors.blue[100],
                   backgroundImage: const AssetImage('assets/images/profile_placeholder.png'),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -20,
-            right: MediaQuery.of(context).size.width / 2 - 80,
-            child: GestureDetector(
-              onTap: () => _showImagePicker(context),
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: primaryColor,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: surfaceColor,
-                    width: 2,
-                  ),
-                ),
-                child: const Icon(
-                  Icons.camera_alt,
-                  size: 20,
-                  color: Colors.white,
                 ),
               ),
             ),
@@ -431,16 +415,69 @@ class ProfileScreen extends StatelessWidget {
   }
 
   void _showEditProfile(BuildContext context) {
-    // Implement edit profile functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Edit profile functionality coming soon!')),
-    );
-  }
-
-  void _showImagePicker(BuildContext context) {
-    // Implement image picker functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Profile picture change coming soon!')),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return SingleChildScrollView(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Edit Profile',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  decoration: const InputDecoration(
+                    labelText: 'Full Name',
+                    border: OutlineInputBorder(),
+                  ),
+                  initialValue: 'John Doe',
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(),
+                  ),
+                  initialValue: 'john.doe@example.com',
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  decoration: const InputDecoration(
+                    labelText: 'Phone Number',
+                    border: OutlineInputBorder(),
+                  ),
+                  initialValue: '+1 (555) 123-4567',
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Profile updated successfully!')),
+                      );
+                    },
+                    child: const Text('Save Changes'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -458,9 +495,10 @@ class ProfileScreen extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              Navigator.pushReplacement(
+              Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (context) => LoginScreen()),
+                (route) => false,
               );
             },
             child: const Text(
@@ -474,26 +512,44 @@ class ProfileScreen extends StatelessWidget {
   }
 
   void _navigateToPersonalInfo(BuildContext context) {
-    // Implement navigation
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PersonalInfoScreen()),
+    );
   }
 
   void _navigateToPrivacySettings(BuildContext context) {
-    // Implement navigation
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PrivacySettingsScreen()),
+    );
   }
 
   void _navigateToNotifications(BuildContext context) {
-    // Implement navigation
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => NotificationsScreen()),
+    );
   }
 
   void _navigateToPolicies(BuildContext context) {
-    // Implement navigation
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PoliciesScreen()),
+    );
   }
 
   void _navigateToPolicyHistory(BuildContext context) {
-    // Implement navigation
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PolicyHistoryScreen()),
+    );
   }
 
   void _navigateToSupport(BuildContext context) {
-    // Implement navigation
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SupportScreen()),
+    );
   }
 }

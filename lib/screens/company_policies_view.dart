@@ -1,34 +1,6 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Insurance App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: const CompanyPoliciesView(),
-    );
-  }
-}
-
-class CompanyPoliciesView extends StatefulWidget {
-  const CompanyPoliciesView({super.key});
-
-  @override
-  State<CompanyPoliciesView> createState() => _CompanyPoliciesViewState();
-}
-
-class _CompanyPoliciesViewState extends State<CompanyPoliciesView> {
+class CompanyPoliciesView extends StatelessWidget {
   final List<Map<String, dynamic>> _policies = [
     {
       'policyNumber': 'POL-1001',
@@ -68,127 +40,79 @@ class _CompanyPoliciesViewState extends State<CompanyPoliciesView> {
     },
   ];
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Policy Approvals'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => _showSnackbar(context, 'Refreshing policies...'),
-          ),
-        ],
-      ),
-      body: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        itemCount: _policies.length,
-        itemBuilder: (context, index) => _buildPolicyCard(_policies[index]),
-      ),
-    );
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending': return Colors.orange;
+      case 'approved': return Colors.green;
+      case 'rejected': return Colors.red;
+      default: return Colors.grey;
+    }
   }
 
-  Widget _buildPolicyCard(Map<String, dynamic> policy) {
+  Widget _buildPolicyCard(Map<String, dynamic> policy, BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      margin: EdgeInsets.all(8),
       child: ExpansionTile(
-        title: Text(
-          'Policy #${policy['policyNumber']}',
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-        subtitle: Text(
-          'Status: ${policy['status']}',
-          style: TextStyle(
-            color: _getStatusColor(policy['status']),
+        title: ListTile(
+          title: Text('Policy #${policy['policyNumber']}'),
+          subtitle: Text('Status: ${policy['status']}'),
+          trailing: Chip(
+            label: Text(policy['status'].toUpperCase()),
+            backgroundColor: _getStatusColor(policy['status']).withOpacity(0.2),
+            labelStyle: TextStyle(
+              color: _getStatusColor(policy['status']),
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSectionHeader('User Information'),
-                _buildInfoRow('Full Name', policy['userData']['fullName']),
-                _buildInfoRow('Email', policy['userData']['email']),
-                _buildInfoRow('Phone', policy['userData']['phone']),
-                _buildInfoRow('ID Number', policy['userData']['idNumber']),
-                const SizedBox(height: 20),
-                
-                _buildSectionHeader('Policy Details'),
-                _buildInfoRow('Policy Type', policy['policyType']),
-                _buildInfoRow('Coverage Amount', '\$${policy['coverageAmount']}'),
-                _buildInfoRow('Start Date', policy['startDate']),
-                _buildInfoRow('End Date', policy['endDate']),
-                const SizedBox(height: 20),
-                
+                Text('User Information', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('Name: ${policy['userData']['fullName']}'),
+                Text('Email: ${policy['userData']['email']}'),
+                Text('Phone: ${policy['userData']['phone']}'),
+                SizedBox(height: 16),
+                Text('Policy Details', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('Type: ${policy['policyType']}'),
+                Text('Coverage: \$${policy['coverageAmount']}'),
+                Text('Period: ${policy['startDate']} to ${policy['endDate']}'),
+                SizedBox(height: 16),
                 if (policy['documents'] != null && policy['documents'].isNotEmpty)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildSectionHeader('Attached Documents'),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: policy['documents'].map<Widget>((doc) {
-                          return Card(
-                            elevation: 2,
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.insert_drive_file, color: Colors.blue),
-                                  const SizedBox(width: 8),
-                                  Text(doc['name']),
-                                ],
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 16),
+                      Text('Documents', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ...policy['documents'].map((doc) => ListTile(
+                        leading: Icon(Icons.insert_drive_file),
+                        title: Text(doc['name']),
+                      )).toList(),
                     ],
                   ),
-                
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red[400],
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        onPressed: () => _showSnackbar(context, 'Policy rejected'),
-                        child: const Text('Reject', style: TextStyle(fontSize: 16)),
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green[400],
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        onPressed: () => _showSnackbar(context, 'Policy approved'),
-                        child: const Text('Approve', style: TextStyle(fontSize: 16)),
-                      ),
-                    ],
-                  ),
+                SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                      child: Text('Reject'),
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Policy rejected')));
+                      },
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                      child: Text('Approve'),
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Policy approved')));
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -198,65 +122,21 @@ class _CompanyPoliciesViewState extends State<CompanyPoliciesView> {
     );
   }
 
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'pending':
-        return Colors.orange;
-      case 'approved':
-        return Colors.green;
-      case 'rejected':
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.blue,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String? value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              '$label:',
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[700],
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value ?? 'Not provided',
-              style: const TextStyle(fontSize: 16),
-            ),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Policy Approvals'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: () {},
           ),
         ],
       ),
-    );
-  }
-
-  void _showSnackbar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 2),
+      body: ListView.builder(
+        itemCount: _policies.length,
+        itemBuilder: (context, index) => _buildPolicyCard(_policies[index], context),
       ),
     );
   }
