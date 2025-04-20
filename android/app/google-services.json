@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1056072836362",
+    "project_id": "insurace-app-7d341",
+    "storage_bucket": "insurace-app-7d341.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1056072836362:android:32a0e0b5fb2aee163e46f3",
+        "android_client_info": {
+          "package_name": "com.Ali_AB123.flutter_app_test"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8WS9uqMoZ02BOxVTh0Mpb2gT8fUEhHCs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

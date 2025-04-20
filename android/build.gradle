@@ -1,3 +1,14 @@
+buildscript {
+    repositories {
+        google()  // required
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.0.2' // make sure your Gradle version matches your project
+        classpath 'com.google.gms:google-services:4.3.15' // ✅ firebase services classpath
+    }
+}
+
 allprojects {
     repositories {
         google()
