@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_test/screens/company_claims_view.dart';
 import 'package:flutter_app_test/screens/company_home.dart';
@@ -6,7 +7,20 @@ import 'package:flutter_app_test/screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  if(kIsWeb){
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyB1gICVcZSHqgzVgCfQsLlvXSnspTjxCUU",
+        appId: "1:1056072836362:web:e69e862ed86877073e46f3",
+        messagingSenderId: "1056072836362", 
+        projectId: "insurace-app-7d341",
+        storageBucket: "insurace-app-7d341.firebasestorage.app",
+        )
+    );
+
+  }
+  else{await Firebase.initializeApp();}
+  
   runApp(const MyApp());
 }
 
