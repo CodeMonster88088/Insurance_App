@@ -25,9 +25,9 @@ class _HomePageState extends State<HomePage> {
       InsuranceSearchFilter(),
       ActivePoliciesScreen(),
       _buildHelpCenterScreen(),
-      CompanyPoliciesView(),
-      CompanyClaimsView(),
-      CompanyHomePage(),
+      // CompanyPoliciesView(),
+      // CompanyClaimsView(),
+      // CompanyHomePage(),
     ];
   }
 
@@ -1000,21 +1000,21 @@ class _HomePageState extends State<HomePage> {
                 activeIcon: Icon(Icons.help_center),
                 label: 'Help',
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.business_outlined),
-                activeIcon: Icon(Icons.business),
-                label: 'Company Policies',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.receipt_long_outlined),
-                activeIcon: Icon(Icons.receipt_long),
-                label: 'Company Claims',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.dashboard_outlined),
-                activeIcon: Icon(Icons.dashboard),
-                label: 'Company Dashboard',
-              ),
+              // BottomNavigationBarItem(
+              //   icon: Icon(Icons.business_outlined),
+              //   activeIcon: Icon(Icons.business),
+              //   label: 'Company Policies',
+              // ),
+              // BottomNavigationBarItem(
+              //   icon: Icon(Icons.receipt_long_outlined),
+              //   activeIcon: Icon(Icons.receipt_long),
+              //   label: 'Company Claims',
+              // ),
+              // BottomNavigationBarItem(
+              //   icon: Icon(Icons.dashboard_outlined),
+              //   activeIcon: Icon(Icons.dashboard),
+              //   label: 'Company Dashboard',
+              // ),
             ],
             currentIndex: _selectedIndex,
             selectedItemColor: Colors.blue[800],

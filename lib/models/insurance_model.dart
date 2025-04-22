@@ -11,6 +11,7 @@ class InsuranceModel {
   final List<String> familyMembers;
   final int numberOfTravelers;
   final String coverageType;
+  final double rating;
 
   InsuranceModel({
     required this.id,
@@ -25,6 +26,7 @@ class InsuranceModel {
     required this.familyMembers,
     required this.numberOfTravelers,
     required this.coverageType,
+    required this.rating,
   });
 
   factory InsuranceModel.fromMap(Map<String, dynamic> map) {
@@ -41,6 +43,7 @@ class InsuranceModel {
       familyMembers: List<String>.from(map['familyMembers'] ?? []),
       numberOfTravelers: map['numberOfTravelers'],
       coverageType: map['coverageType'],
+      rating: map['rating'],
     );
   }
 
@@ -88,6 +91,7 @@ class InsuranceModel {
       familyMembers: familyMembers ?? this.familyMembers,
       numberOfTravelers: numberOfTravelers ?? this.numberOfTravelers,
       coverageType: coverageType ?? this.coverageType,
+      rating: rating ?? this.rating,
     );
   }
 

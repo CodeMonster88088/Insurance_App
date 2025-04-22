@@ -23,6 +23,7 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
       familyMembers: ['Spouse', 'Child 1'],
       numberOfTravelers: 2,
       coverageType: 'Comprehensive',
+      rating: 3.2
     ),
     InsuranceModel(
       id: 789012,
@@ -37,6 +38,7 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
       familyMembers: [],
       numberOfTravelers: 1,
       coverageType: 'Basic',
+      rating: 5.0
     ),
   ];
 

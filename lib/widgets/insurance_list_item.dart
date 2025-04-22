@@ -50,12 +50,25 @@ class InsuranceListItem extends StatelessWidget {
 
               const SizedBox(height: 10),
 
+              // Rating Section
+              Row(
+                children: [
+                  const Text(
+                    'Rating: ',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  _buildRatingStars(insurance.rating),
+                ],
+              ),
+
+              const SizedBox(height: 10),
+
               // Price Section (Highlighted)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Price:',
+                    'Price: ',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                   Text(
@@ -86,6 +99,24 @@ class InsuranceListItem extends StatelessWidget {
           style: const TextStyle(fontSize: 14),
         ),
       ],
+    );
+  }
+
+  // Helper method to display rating stars
+  Widget _buildRatingStars(double rating) {
+    List<Widget> stars = [];
+    for (int i = 0; i < 5; i++) {
+      if (i < rating) {
+        stars.add(const Icon(Icons.star, color: Colors.amber, size: 20));
+      } else if (i < rating + 0.5) {
+        stars.add(const Icon(Icons.star_half, color: Colors.amber, size: 20));
+      } else {
+        stars.add(const Icon(Icons.star_border, color: Colors.amber, size: 20));
+      }
+    }
+
+    return Row(
+      children: stars,
     );
   }
 }

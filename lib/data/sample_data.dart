@@ -15,6 +15,7 @@ final List<InsuranceModel> sampleInsuranceData = [
     familyMembers: ['John Doe', 'Jane Doe'],
     numberOfTravelers: 2,
     coverageType: 'Basic',
+    rating: 4.5,
   ),
   InsuranceModel(
     id: 2,
@@ -29,6 +30,7 @@ final List<InsuranceModel> sampleInsuranceData = [
     familyMembers: ['Alice Smith', 'Bob Smith', 'Charlie Smith', 'Dana Smith'],
     numberOfTravelers: 4,
     coverageType: 'Premium',
+    rating: 4.0,
   ),
   InsuranceModel(
     id: 3,
@@ -43,6 +45,7 @@ final List<InsuranceModel> sampleInsuranceData = [
     familyMembers: ['Michael Brown'],
     numberOfTravelers: 1,
     coverageType: 'Standard',
+    rating: 3.5,
   ),
   // Continue with all other entries following the same pattern
   InsuranceModel(
@@ -58,6 +61,7 @@ final List<InsuranceModel> sampleInsuranceData = [
     familyMembers: ['David Wilson', 'Emma Wilson', 'Frank Wilson'],
     numberOfTravelers: 3,
     coverageType: 'Basic',
+    rating: 5.0,
   ),
   InsuranceModel(
     id: 5,
@@ -72,6 +76,7 @@ final List<InsuranceModel> sampleInsuranceData = [
     familyMembers: ['Grace Lee', 'Henry Lee'],
     numberOfTravelers: 2,
     coverageType: 'Standard',
+    rating: 2.0,
   ),
   // Add remaining entries (6-15) with all required fields
 ];

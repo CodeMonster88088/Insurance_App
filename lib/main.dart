@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app_test/screens/home.dart';
-import 'package:flutter_app_test/screens/insurance_search_filter.dart';
+import 'package:flutter_app_test/screens/company_claims_view.dart';
+import 'package:flutter_app_test/screens/company_home.dart';
 import 'package:firebase_core/firebase_core.dart';
-
+import 'package:flutter_app_test/screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,7 +17,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      initialRoute: '/login', // Start with login screen
+      routes: {
+        '/login': (context) => LoginScreen(),
+        '/companyHome': (context) => CompanyHomePage(),
+        '/claims' :(context) => CompanyClaimsView()
+        // Other routes can be added here as needed
+      },
     );
   }
 }
