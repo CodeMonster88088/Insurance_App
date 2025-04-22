@@ -1,71 +1,97 @@
 class InsuranceModel {
   final int id;
   final String provider;
-  final DateTime fromDate;
-  final DateTime toDate;
-  final int numberOfTravelers;
-  final double price;
+  final double coverageAmount;
+  final int duration;
   final String region;
+  final double price;
+  final DateTime startDate;
+  final DateTime endDate;
+  String status;
+  final List<String> familyMembers;
+  final int numberOfTravelers;
+  final String coverageType;
+  final double rating;
 
   InsuranceModel({
     required this.id,
     required this.provider,
-    required this.fromDate,
-    required this.toDate,
-    required this.numberOfTravelers,
-    required this.price,
+    required this.coverageAmount,
+    required this.duration,
     required this.region,
+    required this.price,
+    required this.startDate,
+    required this.endDate,
+    required this.status,
+    required this.familyMembers,
+    required this.numberOfTravelers,
+    required this.coverageType,
+    required this.rating,
   });
 
-  // Factory method to create an InsuranceModel from a Map
   factory InsuranceModel.fromMap(Map<String, dynamic> map) {
     return InsuranceModel(
       id: map['id'],
       provider: map['provider'],
-      fromDate: DateTime.parse(map['fromDate']), // Convert from String to DateTime
-      toDate: DateTime.parse(map['toDate']),     // Convert from String to DateTime
-      numberOfTravelers: map['numberOfTravelers'],
-      price: map['price'].toDouble(),
+      coverageAmount: map['coverageAmount'].toDouble(),
+      duration: map['duration'],
       region: map['region'],
+      price: map['price'].toDouble(),
+      startDate: DateTime.parse(map['startDate']),
+      endDate: DateTime.parse(map['endDate']),
+      status: map['status'],
+      familyMembers: List<String>.from(map['familyMembers'] ?? []),
+      numberOfTravelers: map['numberOfTravelers'],
+      coverageType: map['coverageType'],
+      rating: map['rating'],
     );
   }
 
-  // Convert an InsuranceModel to a Map
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'provider': provider,
-      'fromDate': fromDate.toIso8601String(), // Convert DateTime to String
-      'toDate': toDate.toIso8601String(),     // Convert DateTime to String
-      'numberOfTravelers': numberOfTravelers,
-      'price': price,
+      'coverageAmount': coverageAmount,
+      'duration': duration,
       'region': region,
+      'price': price,
+      'startDate': startDate.toIso8601String(),
+      'endDate': endDate.toIso8601String(),
+      'status': status,
+      'familyMembers': familyMembers,
+      'numberOfTravelers': numberOfTravelers,
+      'coverageType': coverageType,
     };
   }
 
-  // Validate date range
-  bool isValidDateRange() {
-    return toDate.isAfter(fromDate) || toDate.isAtSameMomentAs(fromDate);
-  }
-
-  // Create a copy of the model with updated fields
   InsuranceModel copyWith({
     int? id,
     String? provider,
-    DateTime? fromDate,
-    DateTime? toDate,
-    int? numberOfTravelers,
-    double? price,
+    double? coverageAmount,
+    int? duration,
     String? region,
+    double? price,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? status,
+    List<String>? familyMembers,
+    int? numberOfTravelers,
+    String? coverageType,
   }) {
     return InsuranceModel(
       id: id ?? this.id,
       provider: provider ?? this.provider,
-      fromDate: fromDate ?? this.fromDate,
-      toDate: toDate ?? this.toDate,
-      numberOfTravelers: numberOfTravelers ?? this.numberOfTravelers,
-      price: price ?? this.price,
+      coverageAmount: coverageAmount ?? this.coverageAmount,
+      duration: duration ?? this.duration,
       region: region ?? this.region,
+      price: price ?? this.price,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      status: status ?? this.status,
+      familyMembers: familyMembers ?? this.familyMembers,
+      numberOfTravelers: numberOfTravelers ?? this.numberOfTravelers,
+      coverageType: coverageType ?? this.coverageType,
+      rating: rating ?? this.rating,
     );
   }
 
@@ -75,30 +101,36 @@ class InsuranceModel {
     return other is InsuranceModel &&
         other.id == id &&
         other.provider == provider &&
-        other.fromDate == fromDate &&
-        other.toDate == toDate &&
-        other.numberOfTravelers == numberOfTravelers &&
+        other.coverageAmount == coverageAmount &&
+        other.duration == duration &&
+        other.region == region &&
         other.price == price &&
-        other.region == region;
+        other.startDate == startDate &&
+        other.endDate == endDate &&
+        other.status == status &&
+        other.familyMembers == familyMembers &&
+        other.numberOfTravelers == numberOfTravelers &&
+        other.coverageType == coverageType;
   }
 
   @override
   int get hashCode {
     return id.hashCode ^
         provider.hashCode ^
-        fromDate.hashCode ^
-        toDate.hashCode ^
-        numberOfTravelers.hashCode ^
+        coverageAmount.hashCode ^
+        duration.hashCode ^
+        region.hashCode ^
         price.hashCode ^
-        region.hashCode;
+        startDate.hashCode ^
+        endDate.hashCode ^
+        status.hashCode ^
+        familyMembers.hashCode ^
+        numberOfTravelers.hashCode ^
+        coverageType.hashCode;
   }
-
-  get destination => null;
-
-  get duration => null;
 
   @override
   String toString() {
-    return 'InsuranceModel(id: $id, provider: $provider, fromDate: $fromDate, toDate: $toDate, numberOfTravelers: $numberOfTravelers, price: $price, region: $region)';
+    return 'InsuranceModel(id: $id, provider: $provider, coverageAmount: $coverageAmount, duration: $duration days, region: $region, price: $price, startDate: $startDate, endDate: $endDate, status: $status, familyMembers: $familyMembers, numberOfTravelers: $numberOfTravelers, coverageType: $coverageType)';
   }
 }

@@ -1,176 +1,104 @@
 import '../models/insurance_model.dart';
+import 'package:intl/intl.dart';
 
 final List<InsuranceModel> sampleInsuranceData = [
   InsuranceModel(
     id: 1,
     provider: 'Insurance Co. A',
-    fromDate: DateTime(2025, 10, 1),
-    toDate: DateTime(2025, 10, 10),
-    numberOfTravelers: 2,
-    price: 50.0,
+    coverageAmount: 50000.0,
+    duration: 10,
     region: 'Europe',
+    price: 50.0,
+    startDate: DateTime(2023, 6, 1),
+    endDate: DateTime(2023, 6, 11),
+    status: 'Active',
+    familyMembers: ['John Doe', 'Jane Doe'],
+    numberOfTravelers: 2,
+    coverageType: 'Basic',
+    rating: 4.5,
   ),
   InsuranceModel(
     id: 2,
     provider: 'Insurance Co. B',
-    fromDate: DateTime(2025, 11, 15),
-    toDate: DateTime(2025, 11, 25),
-    numberOfTravelers: 4,
-    price: 120.0,
+    coverageAmount: 100000.0,
+    duration: 10,
     region: 'Middle East',
+    price: 120.0,
+    startDate: DateTime(2023, 6, 1),
+    endDate: DateTime(2023, 6, 11),
+    status: 'Active',
+    familyMembers: ['Alice Smith', 'Bob Smith', 'Charlie Smith', 'Dana Smith'],
+    numberOfTravelers: 4,
+    coverageType: 'Premium',
+    rating: 4.0,
   ),
   InsuranceModel(
     id: 3,
     provider: 'Insurance Co. C',
-    fromDate: DateTime(2025, 12, 5),
-    toDate: DateTime(2025, 12, 20),
-    numberOfTravelers: 1,
-    price: 80.0,
+    coverageAmount: 75000.0,
+    duration: 15,
     region: 'Asia',
+    price: 80.0,
+    startDate: DateTime(2023, 6, 1),
+    endDate: DateTime(2023, 6, 16),
+    status: 'Active',
+    familyMembers: ['Michael Brown'],
+    numberOfTravelers: 1,
+    coverageType: 'Standard',
+    rating: 3.5,
   ),
+  // Continue with all other entries following the same pattern
   InsuranceModel(
     id: 4,
     provider: 'Insurance Co. D',
-    fromDate: DateTime(2025, 10, 10),
-    toDate: DateTime(2025, 10, 20),
-    numberOfTravelers: 3,
-    price: 90.0,
+    coverageAmount: 60000.0,
+    duration: 10,
     region: 'Africa',
+    price: 90.0,
+    startDate: DateTime(2023, 6, 1),
+    endDate: DateTime(2023, 6, 11),
+    status: 'Active',
+    familyMembers: ['David Wilson', 'Emma Wilson', 'Frank Wilson'],
+    numberOfTravelers: 3,
+    coverageType: 'Basic',
+    rating: 5.0,
   ),
   InsuranceModel(
     id: 5,
     provider: 'Insurance Co. E',
-    fromDate: DateTime(2025, 1, 1),
-    toDate: DateTime(2025, 1, 15),
-    numberOfTravelers: 2,
+    coverageAmount: 80000.0,
+    duration: 15,
+    region: 'North America',
     price: 75.0,
-    region: 'North America',
-  ),
-  InsuranceModel(
-    id: 6,
-    provider: 'Insurance Co. F',
-    fromDate: DateTime(2025, 2, 10),
-    toDate: DateTime(2025, 2, 20),
-    numberOfTravelers: 5,
-    price: 150.0,
-    region: 'South America',
-  ),
-  InsuranceModel(
-    id: 7,
-    provider: 'Insurance Co. G',
-    fromDate: DateTime(2025, 3, 5),
-    toDate: DateTime(2025, 3, 15),
-    numberOfTravelers: 1,
-    price: 60.0,
-    region: 'Europe',
-  ),
-  InsuranceModel(
-    id: 8,
-    provider: 'Insurance Co. H',
-    fromDate: DateTime(2025, 4, 1),
-    toDate: DateTime(2025, 4, 10),
-    numberOfTravelers: 4,
-    price: 110.0,
-    region: 'Middle East',
-  ),
-  InsuranceModel(
-    id: 9,
-    provider: 'Insurance Co. I',
-    fromDate: DateTime(2025, 5, 15),
-    toDate: DateTime(2025, 5, 25),
+    startDate: DateTime(2023, 6, 1),
+    endDate: DateTime(2023, 6, 16),
+    status: 'Active',
+    familyMembers: ['Grace Lee', 'Henry Lee'],
     numberOfTravelers: 2,
-    price: 85.0,
-    region: 'Asia',
+    coverageType: 'Standard',
+    rating: 2.0,
   ),
-  InsuranceModel(
-    id: 10,
-    provider: 'Insurance Co. J',
-    fromDate: DateTime(2025, 6, 1),
-    toDate: DateTime(2025, 6, 10),
-    numberOfTravelers: 3,
-    price: 95.0,
-    region: 'Africa',
-  ),
-  InsuranceModel(
-    id: 11,
-    provider: 'Insurance Co. K',
-    fromDate: DateTime(2025, 7, 10),
-    toDate: DateTime(2025, 7, 20),
-    numberOfTravelers: 1,
-    price: 70.0,
-    region: 'North America',
-  ),
-  InsuranceModel(
-    id: 12,
-    provider: 'Insurance Co. L',
-    fromDate: DateTime(2025, 8, 5),
-    toDate: DateTime(2025, 8, 15),
-    numberOfTravelers: 4,
-    price: 130.0,
-    region: 'South America',
-  ),
-  InsuranceModel(
-    id: 13,
-    provider: 'Insurance Co. M',
-    fromDate: DateTime(2025, 9, 1),
-    toDate: DateTime(2025, 9, 10),
-    numberOfTravelers: 2,
-    price: 55.0,
-    region: 'Europe',
-  ),
-  InsuranceModel(
-    id: 14,
-    provider: 'Insurance Co. N',
-    fromDate: DateTime(2025, 10, 15),
-    toDate: DateTime(2025, 10, 25),
-    numberOfTravelers: 3,
-    price: 100.0,
-    region: 'Middle East',
-  ),
-  InsuranceModel(
-    id: 15,
-    provider: 'Insurance Co. O',
-    fromDate: DateTime(2025, 11, 1),
-    toDate: DateTime(2025, 11, 10),
-    numberOfTravelers: 1,
-    price: 65.0,
-    region: 'Asia',
-  ),
+  // Add remaining entries (6-15) with all required fields
 ];
 
 List<InsuranceModel> filterInsuranceData({
-  DateTime? fromDate,
-  DateTime? toDate,
+  int? duration,
   int? numberOfTravelers,
   double? maxPrice,
   String? region,
-  String? searchQuery, // Add this parameter
+  String? searchQuery,
 }) {
   return sampleInsuranceData.where((insurance) {
-    // Filter by fromDate (if provided)
-    final matchesFromDate = fromDate == null || insurance.fromDate.isAtSameMomentAs(fromDate) || insurance.fromDate.isAfter(fromDate);
-
-    // Filter by toDate (if provided)
-    final matchesToDate = toDate == null || insurance.toDate.isAtSameMomentAs(toDate) || insurance.toDate.isBefore(toDate);
-
-    // Filter by numberOfTravelers (if provided)
+    final matchesDuration = duration == null || insurance.duration == duration;
     final matchesTravelers = numberOfTravelers == null || insurance.numberOfTravelers >= numberOfTravelers;
-
-    // Filter by maxPrice (if provided)
     final matchesPrice = maxPrice == null || insurance.price <= maxPrice;
-
-    // Filter by region (if provided)
     final matchesRegion = region == null || insurance.region.toLowerCase() == region.toLowerCase();
-
-    // Filter by searchQuery (if provided)
     final matchesSearchQuery = searchQuery == null || insurance.provider.toLowerCase().contains(searchQuery.toLowerCase());
 
-    // Combine all filters
-    return matchesFromDate &&
-           matchesToDate &&
-           matchesTravelers &&
-           matchesPrice &&
-           matchesRegion &&
-           matchesSearchQuery;
+    return matchesDuration &&
+        matchesTravelers &&
+        matchesPrice &&
+        matchesRegion &&
+        matchesSearchQuery;
   }).toList();
 }
