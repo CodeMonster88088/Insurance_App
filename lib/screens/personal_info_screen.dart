@@ -1,6 +1,42 @@
 import 'package:flutter/material.dart';
 
-class PersonalInfoScreen extends StatelessWidget {
+class PersonalInfoScreen extends StatefulWidget {
+  @override
+  _PersonalInfoScreenState createState() => _PersonalInfoScreenState();
+}
+
+class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
+  // User data that can be edited
+  String fullName = 'John Doe';
+  String dateOfBirth = 'January 15, 1985';
+  String gender = 'Male';
+  String email = 'john.doe@example.com';
+  String phone = '+1 (555) 123-4567';
+  String address = '123 Main St, Anytown, USA';
+  String nationalId = '123-456-789';
+  String passport = 'AB1234567';
+
+  // Controllers for edit form
+  late TextEditingController nameController;
+  late TextEditingController dobController;
+  late TextEditingController emailController;
+
+  @override
+  void initState() {
+    super.initState();
+    nameController = TextEditingController(text: fullName);
+    dobController = TextEditingController(text: dateOfBirth);
+    emailController = TextEditingController(text: email);
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    dobController.dispose();
+    emailController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,9 +52,9 @@ class PersonalInfoScreen extends StatelessWidget {
               context,
               title: 'Basic Information',
               items: [
-                _buildInfoItem('Full Name', 'John Doe'),
-                _buildInfoItem('Date of Birth', 'January 15, 1985'),
-                _buildInfoItem('Gender', 'Male'),
+                _buildInfoItem('Full Name', fullName),
+                _buildInfoItem('Date of Birth', dateOfBirth),
+                _buildInfoItem('Gender', gender),
               ],
             ),
             SizedBox(height: 16),
@@ -26,9 +62,9 @@ class PersonalInfoScreen extends StatelessWidget {
               context,
               title: 'Contact Information',
               items: [
-                _buildInfoItem('Email', 'john.doe@example.com'),
-                _buildInfoItem('Phone', '+1 (555) 123-4567'),
-                _buildInfoItem('Address', '123 Main St, Anytown, USA'),
+                _buildInfoItem('Email', email),
+                _buildInfoItem('Phone', phone),
+                _buildInfoItem('Address', address),
               ],
             ),
             SizedBox(height: 16),
@@ -36,8 +72,8 @@ class PersonalInfoScreen extends StatelessWidget {
               context,
               title: 'Identification',
               items: [
-                _buildInfoItem('National ID', '123-456-789'),
-                _buildInfoItem('Passport', 'AB1234567'),
+                _buildInfoItem('National ID', nationalId),
+                _buildInfoItem('Passport', passport),
               ],
             ),
           ],
@@ -99,6 +135,11 @@ class PersonalInfoScreen extends StatelessWidget {
   }
 
   void _showEditPersonalInfo(BuildContext context) {
+    // Update controllers with current values before showing the dialog
+    nameController.text = fullName;
+    dobController.text = dateOfBirth;
+    emailController.text = email;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -122,36 +163,43 @@ class PersonalInfoScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 20),
                 TextFormField(
+                  controller: nameController,
                   decoration: InputDecoration(
                     labelText: 'Full Name',
                     border: OutlineInputBorder(),
                   ),
-                  initialValue: 'John Doe',
                 ),
                 SizedBox(height: 16),
                 TextFormField(
+                  controller: dobController,
                   decoration: InputDecoration(
                     labelText: 'Date of Birth',
                     border: OutlineInputBorder(),
                   ),
-                  initialValue: 'January 15, 1985',
                 ),
                 SizedBox(height: 16),
                 TextFormField(
+                  controller: emailController,
                   decoration: InputDecoration(
                     labelText: 'Email',
                     border: OutlineInputBorder(),
                   ),
-                  initialValue: 'john.doe@example.com',
                 ),
                 SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
+                      // Save the changes to state
+                      setState(() {
+                        fullName = nameController.text;
+                        dateOfBirth = dobController.text;
+                        email = emailController.text;
+                      });
+                      
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Personal information updated')),
+                        SnackBar(content: Text('Personal information updated successfully!')),
                       );
                     },
                     child: Text('Save Changes'),

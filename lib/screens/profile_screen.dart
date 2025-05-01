@@ -7,7 +7,38 @@ import 'package:flutter_app_test/screens/policies_screen.dart';
 import 'package:flutter_app_test/screens/policy_history_screen.dart';
 import 'package:flutter_app_test/screens/support_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
+  @override
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  // User data that can be edited
+  String userName = 'John Doe';
+  String userEmail = 'john.doe@example.com';
+  String userPhone = '+1 (555) 123-4567';
+
+  // Controllers for edit form
+  late TextEditingController nameController;
+  late TextEditingController emailController;
+  late TextEditingController phoneController;
+
+  @override
+  void initState() {
+    super.initState();
+    nameController = TextEditingController(text: userName);
+    emailController = TextEditingController(text: userEmail);
+    phoneController = TextEditingController(text: userPhone);
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    emailController.dispose();
+    phoneController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -194,7 +225,7 @@ class ProfileScreen extends StatelessWidget {
         children: [
           const SizedBox(height: 60),
           Text(
-            'John Doe',
+            userName,
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -203,7 +234,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'john.doe@example.com',
+            userEmail,
             style: TextStyle(
               fontSize: 16,
               color: onSurface.withOpacity(0.7),
@@ -211,7 +242,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '+1 (555) 123-4567',
+            userPhone,
             style: TextStyle(
               fontSize: 16,
               color: onSurface.withOpacity(0.7),
@@ -415,6 +446,11 @@ class ProfileScreen extends StatelessWidget {
   }
 
   void _showEditProfile(BuildContext context) {
+    // Update controllers with current values before showing the dialog
+    nameController.text = userName;
+    emailController.text = userEmail;
+    phoneController.text = userPhone;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -438,33 +474,40 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
+                  controller: nameController,
                   decoration: const InputDecoration(
                     labelText: 'Full Name',
                     border: OutlineInputBorder(),
                   ),
-                  initialValue: 'John Doe',
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
+                  controller: emailController,
                   decoration: const InputDecoration(
                     labelText: 'Email',
                     border: OutlineInputBorder(),
                   ),
-                  initialValue: 'john.doe@example.com',
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
+                  controller: phoneController,
                   decoration: const InputDecoration(
                     labelText: 'Phone Number',
                     border: OutlineInputBorder(),
                   ),
-                  initialValue: '+1 (555) 123-4567',
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
+                      // Save the changes to state
+                      setState(() {
+                        userName = nameController.text;
+                        userEmail = emailController.text;
+                        userPhone = phoneController.text;
+                      });
+                      
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Profile updated successfully!')),

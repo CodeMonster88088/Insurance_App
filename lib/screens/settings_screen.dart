@@ -27,6 +27,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _backupFrequency = 'Weekly';
   bool _cloudBackupEnabled = true;
   bool _analyticsEnabled = true;
+  
+  // Add these variables to store profile data
+  String _userName = 'John Doe';
+  String _userEmail = 'john.doe@example.com';
 
   final List<String> _backupFrequencies = ['Daily', 'Weekly', 'Monthly', 'Never'];
 
@@ -44,14 +48,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () {
-              _showSearchDialog(context);
-            },
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
@@ -272,24 +268,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ],
               ),
             ],
-            SizedBox(height: 24),
-            Center(
-              child: ElevatedButton.icon(
-                icon: Icon(Icons.logout),
-                label: Text('Logout'),
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  backgroundColor: Colors.red[50],
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                onPressed: () {
-                  _showLogoutDialog(context);
-                },
-              ),
-            ),
             SizedBox(height: 20),
           ],
         ),
@@ -327,7 +305,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'John Doe',
+                      _userName, // Use the state variable here
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -336,7 +314,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     if (!_simpleModeEnabled) SizedBox(height: 4),
                     if (!_simpleModeEnabled)
                       Text(
-                        'john.doe@example.com',
+                        _userEmail, // Use the state variable here
                         style: TextStyle(
                           color: Colors.grey[600],
                         ),
@@ -576,55 +554,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Logout'),
-        content: Text('Are you sure you want to logout?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Logged out successfully')),
-              );
-            },
-            child: Text('Logout', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showSearchDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Search Settings'),
-        content: TextField(
-          decoration: InputDecoration(
-            hintText: 'Search settings...',
-            prefixIcon: Icon(Icons.search),
-            border: OutlineInputBorder(),
-          ),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _shareApp(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Sharing app with friends...')),
@@ -697,8 +626,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showEditProfileDialog(BuildContext context) {
-    TextEditingController nameController = TextEditingController(text: 'John Doe');
-    TextEditingController emailController = TextEditingController(text: 'john.doe@example.com');
+    // Initialize controllers with current values
+    TextEditingController nameController = TextEditingController(text: _userName);
+    TextEditingController emailController = TextEditingController(text: _userEmail);
 
     showDialog(
       context: context,
@@ -726,6 +656,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           ElevatedButton(
             onPressed: () {
+              // Update the state variables with new values
+              setState(() {
+                _userName = nameController.text;
+                _userEmail = emailController.text;
+              });
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Profile updated successfully')),

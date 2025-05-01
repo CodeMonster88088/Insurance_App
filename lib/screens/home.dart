@@ -7,6 +7,12 @@ import 'package:flutter_app_test/screens/settings_screen.dart';
 import 'package:flutter_app_test/screens/company_claims_view.dart';
 import 'package:flutter_app_test/screens/company_policies_view.dart';
 import 'package:flutter_app_test/screens/company_home.dart';
+import 'package:flutter_app_test/screens/my_claims_screen.dart';
+import 'package:flutter_app_test/screens/documents_screen.dart';
+import 'package:flutter_app_test/screens/family_members_screen.dart';
+import 'package:flutter_app_test/screens/telemedicine_screen.dart';
+import 'package:flutter_app_test/screens/emergency_screen.dart';
+import 'package:flutter_app_test/screens/claim_status_screen.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -25,9 +31,9 @@ class _HomePageState extends State<HomePage> {
       InsuranceSearchFilter(),
       ActivePoliciesScreen(),
       _buildHelpCenterScreen(),
-      // CompanyPoliciesView(),
-      // CompanyClaimsView(),
-      // CompanyHomePage(),
+      CompanyPoliciesView(),
+      CompanyClaimsView(),
+      CompanyHomePage(),
     ];
   }
 
@@ -86,25 +92,33 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       SizedBox(height: 16),
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.verified_user, color: Colors.white),
-                            SizedBox(width: 8),
-                            Text(
-                              'Policy Active',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ActivePoliciesScreen()),
+                          );
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.verified_user, color: Colors.white),
+                              SizedBox(width: 8),
+                              Text(
+                                'Policy Active',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -125,19 +139,34 @@ class _HomePageState extends State<HomePage> {
                   icon: Icons.medical_services,
                   label: 'My Claims',
                   color: Colors.green,
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => MyClaimsScreen()),
+                    );
+                  },
                 ),
                 _buildQuickAction(
                   icon: Icons.document_scanner,
                   label: 'Documents',
                   color: Colors.blue,
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => DocumentsScreen()),
+                    );
+                  },
                 ),
                 _buildQuickAction(
                   icon: Icons.family_restroom,
                   label: 'Family',
                   color: Colors.purple,
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => FamilyMembersScreen()),
+                    );
+                  },
                 ),
               ],
             ),
@@ -147,100 +176,108 @@ class _HomePageState extends State<HomePage> {
           // Active Policy Card
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Container(
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Active Policy',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue[900],
-                        ),
-                      ),
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.green[50],
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          'Active',
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ActivePoliciesScreen()),
+                );
+              },
+              child: Container(
+                padding: EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Active Policy',
                           style: TextStyle(
-                            color: Colors.green[800],
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
+                            color: Colors.blue[900],
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 15),
-                  Row(
-                    children: [
-                      Icon(Icons.health_and_safety, color: Colors.blue, size: 30),
-                      SizedBox(width: 15),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Global Health Plus',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.green[50],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            'Active',
+                            style: TextStyle(
+                              color: Colors.green[800],
+                              fontWeight: FontWeight.bold,
                             ),
-                            SizedBox(height: 4),
-                            Text(
-                              'Expires: Dec 31, 2024',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                      Icon(Icons.chevron_right, color: Colors.grey),
-                    ],
-                  ),
-                  SizedBox(height: 15),
-                  Divider(),
-                  SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildPolicyDetail(
-                        title: 'Coverage',
-                        value: '\$500,000',
-                      ),
-                      _buildPolicyDetail(
-                        title: 'Deductible',
-                        value: '\$1,000',
-                      ),
-                      _buildPolicyDetail(
-                        title: 'Renewal',
-                        value: 'Monthly',
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                    SizedBox(height: 15),
+                    Row(
+                      children: [
+                        Icon(Icons.health_and_safety, color: Colors.blue, size: 30),
+                        SizedBox(width: 15),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Global Health Plus',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                'Expires: Dec 31, 2024',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.chevron_right, color: Colors.grey),
+                      ],
+                    ),
+                    SizedBox(height: 15),
+                    Divider(),
+                    SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildPolicyDetail(
+                          title: 'Coverage',
+                          value: '\$500,000',
+                        ),
+                        _buildPolicyDetail(
+                          title: 'Deductible',
+                          value: '\$1,000',
+                        ),
+                        _buildPolicyDetail(
+                          title: 'Renewal',
+                          value: 'Monthly',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -269,12 +306,24 @@ class _HomePageState extends State<HomePage> {
                         icon: Icons.medical_information,
                         title: 'Telemedicine',
                         color: Colors.blue[400]!,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => TelemedicineScreen()),
+                          );
+                        },
                       ),
                       SizedBox(width: 15),
                       _buildFeatureCard(
                         icon: Icons.airport_shuttle,
                         title: 'Emergency',
                         color: Colors.red[400]!,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => EmergencyScreen()),
+                          );
+                        },
                       ),
                       SizedBox(width: 15),
                       _buildFeatureCard(
@@ -288,6 +337,12 @@ class _HomePageState extends State<HomePage> {
                         icon: Icons.receipt,
                         title: 'Claim Status',
                         color: Colors.orange[400]!,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ClaimStatusScreen()),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -338,7 +393,9 @@ class _HomePageState extends State<HomePage> {
                   IconButton(
                     icon: Icon(Icons.phone, color: Colors.white),
                     onPressed: () {
-                      // Call emergency number
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Emergency call initiated')),
+                      );
                     },
                   ),
                 ],
@@ -612,13 +669,6 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ],
                     ),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Search help articles...',
-                        prefixIcon: Icon(Icons.search, color: Colors.blue),
-                        border: InputBorder.none,
-                      ),
-                    ),
                   ),
                   SizedBox(height: 24),
                   Text(
@@ -654,32 +704,8 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ],
                   ),
-                  SizedBox(height: 24),
-                  Text(
-                    'Popular Articles',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
                 ],
               ),
-            ),
-          ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final articles = [
-                  {'title': 'Understanding your policy', 'category': 'Policies'},
-                  {'title': 'Adding family members', 'category': 'Account'},
-                  {'title': 'International coverage', 'category': 'Coverage'},
-                ];
-                return _buildArticleItem(
-                  title: articles[index]['title']!,
-                  category: articles[index]['category']!,
-                );
-              },
-              childCount: 3,
             ),
           ),
         ],
@@ -820,14 +846,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildArticleItem({required String title, required String category}) {
-    return ListTile(
-      leading: Icon(Icons.article, color: Colors.blue),
-      title: Text(title),
-      subtitle: Text(category),
-    );
-  }
-
   void _showFAQSection(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -844,14 +862,29 @@ class _HomePageState extends State<HomePage> {
                     ListTile(
                       title: Text('How do I update my personal information?'),
                       subtitle: Text('You can update your details in the Profile section'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ProfileScreen()),
+                        );
+                      },
                     ),
                     ListTile(
                       title: Text('What should I do if I lose my insurance card?'),
                       subtitle: Text('Contact customer support for a replacement'),
+                      onTap: () => _showCallSupportDialog(context),
                     ),
                     ListTile(
                       title: Text('How do I add a family member to my plan?'),
                       subtitle: Text('Use the account settings or contact support'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => FamilyMembersScreen()),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -956,7 +989,11 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
             icon: Icon(Icons.notifications, color: Colors.white),
-            onPressed: () {},
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('No new notifications')),
+              );
+            },
           ),
         ],
       ),
@@ -1000,21 +1037,6 @@ class _HomePageState extends State<HomePage> {
                 activeIcon: Icon(Icons.help_center),
                 label: 'Help',
               ),
-              // BottomNavigationBarItem(
-              //   icon: Icon(Icons.business_outlined),
-              //   activeIcon: Icon(Icons.business),
-              //   label: 'Company Policies',
-              // ),
-              // BottomNavigationBarItem(
-              //   icon: Icon(Icons.receipt_long_outlined),
-              //   activeIcon: Icon(Icons.receipt_long),
-              //   label: 'Company Claims',
-              // ),
-              // BottomNavigationBarItem(
-              //   icon: Icon(Icons.dashboard_outlined),
-              //   activeIcon: Icon(Icons.dashboard),
-              //   label: 'Company Dashboard',
-              // ),
             ],
             currentIndex: _selectedIndex,
             selectedItemColor: Colors.blue[800],

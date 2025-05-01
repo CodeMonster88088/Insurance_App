@@ -12,6 +12,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   bool _policyUpdates = true;
   bool _promotionalOffers = false;
   bool _paymentReminders = true;
+  String _quietHoursStart = '9:00 PM';
+  String _quietHoursEnd = '7:00 AM';
+
+  final List<String> _timeOptions = List.generate(24, (index) {
+    final hour = index;
+    final displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+    final period = hour < 12 ? 'AM' : 'PM';
+    return '$displayHour:00 $period';
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,21 +36,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             'Push Notifications',
             'Receive app notifications',
             _pushNotifications,
-            (value) => setState(() => _pushNotifications = value),
+            (value) => _updateSetting('push', value),
           ),
           _buildDivider(),
           _buildSwitchSetting(
             'Email Notifications',
             'Receive notifications via email',
             _emailNotifications,
-            (value) => setState(() => _emailNotifications = value),
+            (value) => _updateSetting('email', value),
           ),
           _buildDivider(),
           _buildSwitchSetting(
             'SMS Notifications',
             'Receive text message notifications',
             _smsNotifications,
-            (value) => setState(() => _smsNotifications = value),
+            (value) => _updateSetting('sms', value),
           ),
           SizedBox(height: 24),
           _buildSectionHeader('Notification Types'),
@@ -49,30 +58,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             'Policy Updates',
             'Important changes to your policies',
             _policyUpdates,
-            (value) => setState(() => _policyUpdates = value),
+            (value) => _updateSetting('policy', value),
           ),
           _buildDivider(),
           _buildSwitchSetting(
             'Promotional Offers',
             'Special offers and discounts',
             _promotionalOffers,
-            (value) => setState(() => _promotionalOffers = value),
+            (value) => _updateSetting('promo', value),
           ),
           _buildDivider(),
           _buildSwitchSetting(
             'Payment Reminders',
             'Upcoming payment notifications',
             _paymentReminders,
-            (value) => setState(() => _paymentReminders = value),
+            (value) => _updateSetting('payment', value),
           ),
           SizedBox(height: 24),
           _buildSectionHeader('Notification Schedule'),
-          ListTile(
-            title: Text('Quiet Hours'),
-            subtitle: Text('9:00 PM - 7:00 AM'),
-            trailing: Icon(Icons.chevron_right),
-            onTap: () => _showQuietHoursDialog(context),
-          ),
+          _buildQuietHoursTile(),
         ],
       ),
     );
@@ -98,6 +102,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       subtitle: Text(subtitle),
       value: value,
       onChanged: onChanged,
+      activeColor: Theme.of(context).primaryColor,
+    );
+  }
+
+  Widget _buildQuietHoursTile() {
+    return ListTile(
+      title: Text('Quiet Hours'),
+      subtitle: Text('$_quietHoursStart - $_quietHoursEnd'),
+      trailing: Icon(Icons.chevron_right),
+      onTap: () => _showQuietHoursDialog(context),
     );
   }
 
@@ -105,68 +119,136 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Divider(height: 1, thickness: 1);
   }
 
+  void _updateSetting(String type, bool value) {
+    setState(() {
+      switch (type) {
+        case 'push':
+          _pushNotifications = value;
+          break;
+        case 'email':
+          _emailNotifications = value;
+          break;
+        case 'sms':
+          _smsNotifications = value;
+          break;
+        case 'policy':
+          _policyUpdates = value;
+          break;
+        case 'promo':
+          _promotionalOffers = value;
+          break;
+        case 'payment':
+          _paymentReminders = value;
+          break;
+      }
+    });
+    
+    // Show confirmation
+    final settingName = {
+      'push': 'Push notifications',
+      'email': 'Email notifications',
+      'sms': 'SMS notifications',
+      'policy': 'Policy updates',
+      'promo': 'Promotional offers',
+      'payment': 'Payment reminders',
+    }[type];
+    
+    _showConfirmation(
+      context,
+      '$settingName ${value ? 'enabled' : 'disabled'}'
+    );
+  }
+
   void _showQuietHoursDialog(BuildContext context) {
+    String newStart = _quietHoursStart;
+    String newEnd = _quietHoursEnd;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Set Quiet Hours'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Select time range when notifications should be silent'),
-            SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    value: '9:00 PM',
-                    items: List.generate(24, (index) {
-                      final hour = index + 1;
-                      final time = hour > 12 ? '${hour - 12}:00 PM' : '$hour:00 AM';
-                      return DropdownMenuItem(
-                        value: time,
-                        child: Text(time),
-                      );
-                    }),
-                    onChanged: (value) {},
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Set Quiet Hours'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Select time range when notifications should be silent'),
+              SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: _quietHoursStart,
+                      items: _timeOptions.map((time) {
+                        return DropdownMenuItem(
+                          value: time,
+                          child: Text(time),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          newStart = value;
+                        }
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Start Time',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
                   ),
-                ),
-                SizedBox(width: 16),
-                Text('to'),
-                SizedBox(width: 16),
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    value: '7:00 AM',
-                    items: List.generate(24, (index) {
-                      final hour = index + 1;
-                      final time = hour > 12 ? '${hour - 12}:00 PM' : '$hour:00 AM';
-                      return DropdownMenuItem(
-                        value: time,
-                        child: Text(time),
-                      );
-                    }),
-                    onChanged: (value) {},
+                  SizedBox(width: 16),
+                  Text('to'),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: _quietHoursEnd,
+                      items: _timeOptions.map((time) {
+                        return DropdownMenuItem(
+                          value: time,
+                          child: Text(time),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          newEnd = value;
+                        }
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'End Time',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _quietHoursStart = newStart;
+                  _quietHoursEnd = newEnd;
+                });
+                Navigator.pop(context);
+                _showConfirmation(context, 'Quiet hours updated');
+              },
+              child: Text('Save'),
             ),
           ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Quiet hours updated')),
-              );
-            },
-            child: Text('Save'),
-          ),
-        ],
+        );
+      },
+    );
+  }
+
+  void _showConfirmation(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: Duration(seconds: 2),
       ),
     );
   }
