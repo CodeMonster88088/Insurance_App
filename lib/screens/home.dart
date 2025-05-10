@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app_test/models/user_model';
 import 'package:flutter_app_test/screens/active_policies_screen.dart';
 import 'package:flutter_app_test/screens/insurance_search_filter.dart';
 import 'package:flutter_app_test/screens/login_screen.dart';
@@ -22,19 +25,33 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   late List<Widget> _pages;
+  UserModel? userModel;
 
   @override
   void initState() {
     super.initState();
-    _pages = [
-      _buildHomeContent(),
-      InsuranceSearchFilter(),
-      ActivePoliciesScreen(),
-      _buildHelpCenterScreen(),
-      CompanyPoliciesView(),
-      CompanyClaimsView(),
-      CompanyHomePage(),
-    ];
+    fetchUserData();
+  }
+
+  void fetchUserData() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (doc.exists) {
+        setState(() {
+          userModel = UserModel.fromMap(doc.data()!, uid);
+          _pages = [
+            _buildHomeContent(),
+            InsuranceSearchFilter(),
+            ActivePoliciesScreen(),
+            _buildHelpCenterScreen(),
+            CompanyPoliciesView(),
+            CompanyClaimsView(),
+            CompanyHomePage(),
+          ];
+        });
+      }
+    }
   }
 
   Widget _buildHomeContent() {
@@ -915,14 +932,14 @@ class _HomePageState extends State<HomePage> {
                 ),
                 SizedBox(height: 10),
                 Text(
-                  'Welcome, User!',
+                  'Welcome, ${userModel?.fullName ?? 'User'}!',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
                   ),
                 ),
                 Text(
-                  'user@example.com',
+                  '${userModel?.email}',
                   style: TextStyle(
                     color: Colors.white70,
                   ),

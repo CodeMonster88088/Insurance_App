@@ -1,0 +1,34 @@
+class UserModel {
+  final String uid;
+  final String email;
+  final String role; // 'customer' or 'company'
+  final String fullName;
+
+  UserModel({
+    required this.uid,
+    required this.email,
+    required this.role,
+    required this.fullName,
+  });
+
+  factory UserModel.fromMap(Map<String, dynamic> map, String uid) {
+    return UserModel(
+      uid: uid,
+      email: map['email'] ?? '',
+      role: map['role'] ?? 'customer',
+      fullName: map['fullName'] ?? '',  // Ensuring fullName is properly fetched
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'email': email,
+      'role': role,
+      'fullName': fullName,  // Ensure fullName is included when saving to Firestore
+    };
+  }
+
+  @override
+  String toString() =>
+      'UserModel(uid: $uid, email: $email, role: $role, fullName: $fullName)';
+}

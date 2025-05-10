@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_test/Services/auth.dart';
 import 'package:flutter_app_test/screens/company_home.dart';
@@ -19,31 +20,53 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _errorMessage;
 
   void _handleLogin() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _loading = true;
-        _errorMessage = null;
-      });
+  if (_formKey.currentState!.validate()) {
+    setState(() {
+      _loading = true;
+      _errorMessage = null;
+    });
 
-      var user = await _auth.signInWithEmailAndPassword(
-        _emailController.text.trim(),
-        _passwordController.text.trim(),
-      );
+    var user = await _auth.signInWithEmailAndPassword(
+      _emailController.text.trim(),
+      _passwordController.text.trim(),
+    );
 
-      setState(() => _loading = false);
+    setState(() => _loading = false);
 
-      if (user != null) {
-        // ✅ Navigate to HomePage after login
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => CompanyHomePage()),
-        );
-      } else {
-        setState(() =>
-            _errorMessage = 'Login failed. Please check your credentials.');
+    if (user != null) {
+      try {
+        // Get user role from Firestore
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        final role = doc.data()?['role'];
+
+        if (role == 'customer') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => HomePage()),
+          );
+        } else if (role == 'company') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => CompanyHomePage()),
+          );
+        } else {
+          setState(() => _errorMessage = 'Unknown user role.');
+        }
+      } catch (e) {
+        print('Error retrieving user role: $e');
+        setState(() => _errorMessage = 'Failed to get user role.');
       }
+    } else {
+      setState(() =>
+          _errorMessage = 'Login failed. Please check your credentials.');
     }
   }
+}
+
 
   void _handleAnonymousLogin() async {
     setState(() {

@@ -33,17 +33,17 @@ class InsuranceModel {
     return InsuranceModel(
       id: map['id'],
       provider: map['provider'],
-      coverageAmount: map['coverageAmount'].toDouble(),
+      coverageAmount: (map['coverageAmount'] ?? 0).toDouble(),
       duration: map['duration'],
       region: map['region'],
-      price: map['price'].toDouble(),
+      price: (map['price'] ?? 0).toDouble(),
       startDate: DateTime.parse(map['startDate']),
       endDate: DateTime.parse(map['endDate']),
       status: map['status'],
       familyMembers: List<String>.from(map['familyMembers'] ?? []),
       numberOfTravelers: map['numberOfTravelers'],
       coverageType: map['coverageType'],
-      rating: map['rating'],
+      rating: (map['rating'] ?? 0).toDouble(),
     );
   }
 
@@ -61,6 +61,7 @@ class InsuranceModel {
       'familyMembers': familyMembers,
       'numberOfTravelers': numberOfTravelers,
       'coverageType': coverageType,
+      'rating': rating,
     };
   }
 
@@ -77,6 +78,7 @@ class InsuranceModel {
     List<String>? familyMembers,
     int? numberOfTravelers,
     String? coverageType,
+    double? rating,
   }) {
     return InsuranceModel(
       id: id ?? this.id,
@@ -110,7 +112,8 @@ class InsuranceModel {
         other.status == status &&
         other.familyMembers == familyMembers &&
         other.numberOfTravelers == numberOfTravelers &&
-        other.coverageType == coverageType;
+        other.coverageType == coverageType &&
+        other.rating == rating;
   }
 
   @override
@@ -126,11 +129,12 @@ class InsuranceModel {
         status.hashCode ^
         familyMembers.hashCode ^
         numberOfTravelers.hashCode ^
-        coverageType.hashCode;
+        coverageType.hashCode ^
+        rating.hashCode;
   }
 
   @override
   String toString() {
-    return 'InsuranceModel(id: $id, provider: $provider, coverageAmount: $coverageAmount, duration: $duration days, region: $region, price: $price, startDate: $startDate, endDate: $endDate, status: $status, familyMembers: $familyMembers, numberOfTravelers: $numberOfTravelers, coverageType: $coverageType)';
+    return 'InsuranceModel(id: $id, provider: $provider, coverageAmount: $coverageAmount, duration: $duration days, region: $region, price: $price, startDate: $startDate, endDate: $endDate, status: $status, familyMembers: $familyMembers, numberOfTravelers: $numberOfTravelers, coverageType: $coverageType, rating: $rating)';
   }
 }
