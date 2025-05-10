@@ -45,7 +45,6 @@ class _HomePageState extends State<HomePage> {
             InsuranceSearchFilter(),
             ActivePoliciesScreen(),
             _buildHelpCenterScreen(),
-            CompanyPoliciesView(),
             CompanyClaimsView(),
             CompanyHomePage(),
           ];

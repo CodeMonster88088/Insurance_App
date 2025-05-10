@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_test/Services/auth.dart';
+import 'package:flutter_app_test/models/user_model';
 import 'company_policies_view.dart';
 import 'company_claims_view.dart';
 
@@ -12,16 +15,31 @@ class _CompanyHomePageState extends State<CompanyHomePage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [];
-
+  late UserModel currentUser;
   @override
-  void initState() {
-    super.initState();
-    _pages.addAll([
-      _buildDashboard(), // Your existing dashboard
-      CompanyPoliciesView(),
-      CompanyClaimsView(),
-    ]);
+void initState() {
+  super.initState();
+  _loadUser();
+}
+
+Future<void> _loadUser() async {
+  final uid = FirebaseAuth.instance.currentUser?.uid;
+  if (uid != null) {
+    final snapshot = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    if (snapshot.exists) {
+      setState(() {
+        // Pass both the snapshot data and the uid to fromMap
+        currentUser = UserModel.fromMap(snapshot.data()!, uid); // Updated line
+        _pages.addAll([
+          _buildDashboard(),
+          CompanyPoliciesView(user: currentUser), // Now CompanyPoliciesView will get the user model
+          CompanyClaimsView(),
+        ]);
+      });
+    }
   }
+}
+
 
   void _onItemTapped(int index) {
     setState(() => _selectedIndex = index);

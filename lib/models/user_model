@@ -3,12 +3,18 @@ class UserModel {
   final String email;
   final String role; // 'customer' or 'company'
   final String fullName;
+  final String? phoneNumber; // Optional field
+  final String? address; // Optional field
+  final String? idNumber; // Optional field
 
   UserModel({
     required this.uid,
     required this.email,
     required this.role,
     required this.fullName,
+    this.phoneNumber,
+    this.address,
+    this.idNumber,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map, String uid) {
@@ -16,7 +22,10 @@ class UserModel {
       uid: uid,
       email: map['email'] ?? '',
       role: map['role'] ?? 'customer',
-      fullName: map['fullName'] ?? '',  // Ensuring fullName is properly fetched
+      fullName: map['fullName'] ?? '',
+      phoneNumber: map['phoneNumber'],
+      address: map['address'],
+      idNumber: map['idNumber'],
     );
   }
 
@@ -24,11 +33,14 @@ class UserModel {
     return {
       'email': email,
       'role': role,
-      'fullName': fullName,  // Ensure fullName is included when saving to Firestore
+      'fullName': fullName,
+      'phoneNumber': phoneNumber,
+      'address': address,
+      'idNumber': idNumber,
     };
   }
 
   @override
   String toString() =>
-      'UserModel(uid: $uid, email: $email, role: $role, fullName: $fullName)';
+      'UserModel(uid: $uid, email: $email, role: $role, fullName: $fullName, phoneNumber: $phoneNumber, address: $address, idNumber: $idNumber)';
 }

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_app_test/models/user_model';
 
 class CompanyPoliciesView extends StatefulWidget {
+  final UserModel user;
+  const CompanyPoliciesView({Key? key, required this.user}) : super(key: key);
+
   @override
   _CompanyPoliciesViewState createState() => _CompanyPoliciesViewState();
 }
@@ -10,12 +14,20 @@ class _CompanyPoliciesViewState extends State<CompanyPoliciesView> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<List<Map<String, dynamic>>> _fetchPolicies() async {
-    final snapshot = await _firestore.collection('policies').get();
-    return snapshot.docs.map((doc) {
+    final snapshot = await _firestore
+        .collection('insurance_policies')
+        .where('provider_id', isEqualTo: widget.user.uid)
+        .get();
+
+    final policies = snapshot.docs.map((doc) {
       final data = doc.data();
       data['id'] = doc.id;
       return data;
     }).toList();
+
+    print(
+        'Fetched ${policies.length} policies for provider ${widget.user.uid}');
+    return policies;
   }
 
   Future<void> _refreshPolicies() async {
@@ -47,15 +59,26 @@ class _CompanyPoliciesViewState extends State<CompanyPoliciesView> {
             }
 
             final allPolicies = snapshot.data!;
-            final pending =
-                allPolicies.where((p) => p['status'] == 'pending').toList();
-            final approved =
-                allPolicies.where((p) => p['status'] != 'pending').toList();
+
+// These are bookings by users for the company's policies
+            final requests = allPolicies
+                .where((p) =>
+                    p['status'] != null && p['provider_id'] == widget.user.uid)
+                .toList();
+
+// These are policies created by this company
+            final myPolicies = allPolicies
+                .where((p) =>
+                    p['status'] == null && p['provider_id'] == widget.user.uid)
+                .toList();
 
             return TabBarView(
               children: [
-                _buildPolicyList(pending),
-                _buildPolicyList(approved),
+                _buildPolicyList(requests,
+                    isRequestTab: true), // Show user data and actions
+                _buildPolicyList(myPolicies,
+                    isRequestTab:
+                        false), // Just show company-created policy info
               ],
             );
           },
@@ -68,65 +91,76 @@ class _CompanyPoliciesViewState extends State<CompanyPoliciesView> {
     );
   }
 
-  Widget _buildPolicyList(List<Map<String, dynamic>> policies) {
+  Widget _buildPolicyList(List<Map<String, dynamic>> policies,
+      {bool isRequestTab = false}) {
     if (policies.isEmpty) {
       return Center(child: Text('No policies to display.'));
     }
+
     return RefreshIndicator(
       onRefresh: _refreshPolicies,
       child: ListView.builder(
         itemCount: policies.length,
         itemBuilder: (context, index) =>
-            _buildPolicyCard(policies[index], context),
+            _buildPolicyCard(policies[index], context, isRequestTab),
       ),
     );
   }
 
-  Widget _buildPolicyCard(Map<String, dynamic> policy, BuildContext context) {
+  Widget _buildPolicyCard(
+      Map<String, dynamic> policy, BuildContext context, bool isRequestTab) {
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       elevation: 2,
       child: ExpansionTile(
-        leading: Icon(_getStatusIcon(policy['status']),
-            color: _getStatusColor(policy['status'])),
-        title: Text('Policy #${policy['policyNumber']}',
+        leading: isRequestTab
+            ? Icon(_getStatusIcon(policy['status']),
+                color: _getStatusColor(policy['status']))
+            : Icon(Icons.policy, color: Colors.blue),
+        title: Text('Policy #${policy['policyNumber'] ?? policy['id']}',
             style: TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(
-            '${policy['policyType']} • \$${policy['coverageAmount'].toStringAsFixed(2)}'),
-        trailing: Chip(
-          label: Text(policy['status'].toUpperCase()),
-          backgroundColor: _getStatusColor(policy['status']).withOpacity(0.2),
-          labelStyle: TextStyle(
-            color: _getStatusColor(policy['status']),
-            fontWeight: FontWeight.bold,
-            fontSize: 12,
-          ),
-        ),
+            '${policy['policyType'] ?? 'General'} • \$${(policy['coverageAmount'] ?? 0).toStringAsFixed(2)}'),
+        trailing: isRequestTab
+            ? Chip(
+                label: Text(policy['status'].toUpperCase()),
+                backgroundColor:
+                    _getStatusColor(policy['status']).withOpacity(0.2),
+                labelStyle: TextStyle(
+                  color: _getStatusColor(policy['status']),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              )
+            : null,
         children: [
           Padding(
             padding: EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildPolicyDetailItem(
-                    'Policy Holder', policy['userData']['fullName'] ?? ''),
-                _buildPolicyDetailItem(
-                    'Email', policy['userData']['email'] ?? ''),
-                _buildPolicyDetailItem(
-                    'Phone', policy['userData']['phone'] ?? ''),
-                _buildPolicyDetailItem(
-                    'ID Number', policy['userData']['idNumber'] ?? ''),
-                _buildPolicyDetailItem(
-                    'Address', policy['userData']['address'] ?? ''),
-                Divider(),
+                if (isRequestTab) ...[
+                  _buildPolicyDetailItem(
+                      'Policy Holder', policy['userData']?['fullName'] ?? ''),
+                  _buildPolicyDetailItem(
+                      'Email', policy['userData']?['email'] ?? ''),
+                  _buildPolicyDetailItem(
+                      'Phone', policy['userData']?['phone'] ?? ''),
+                  _buildPolicyDetailItem(
+                      'ID Number', policy['userData']?['idNumber'] ?? ''),
+                  _buildPolicyDetailItem(
+                      'Address', policy['userData']?['address'] ?? ''),
+                  Divider(),
+                ],
                 _buildPolicyDetailItem('Coverage Amount',
-                    '\$${policy['coverageAmount'].toStringAsFixed(2)}'),
+                    '\$${(policy['coverageAmount'] ?? 0).toStringAsFixed(2)}'),
                 _buildPolicyDetailItem('Premium Amount',
-                    '\$${policy['premiumAmount'].toStringAsFixed(2)}'),
-                _buildPolicyDetailItem('Policy Period',
-                    '${policy['startDate']} to ${policy['endDate']}'),
+                    '\$${(policy['premiumAmount'] ?? 0).toStringAsFixed(2)}'),
+                _buildPolicyDetailItem('Duration',
+                    '${policy['duration']} days'),
                 Divider(),
-                if (policy['documents'] != null &&
+                if (isRequestTab &&
+                    policy['documents'] != null &&
                     policy['documents'].isNotEmpty) ...[
                   Text('Documents:',
                       style: TextStyle(fontWeight: FontWeight.bold)),
@@ -142,8 +176,8 @@ class _CompanyPoliciesViewState extends State<CompanyPoliciesView> {
                         ),
                       )),
                 ],
-                SizedBox(height: 16),
-                if (policy['status'] == 'pending') ...[
+                if (isRequestTab && policy['status'] == 'pending') ...[
+                  SizedBox(height: 16),
                   Row(
                     children: [
                       Expanded(
@@ -184,7 +218,7 @@ class _CompanyPoliciesViewState extends State<CompanyPoliciesView> {
                       ),
                     ],
                   ),
-                ],
+                ]
               ],
             ),
           ),
@@ -209,72 +243,94 @@ class _CompanyPoliciesViewState extends State<CompanyPoliciesView> {
     );
   }
 
-  void _addNewPolicy(Map<String, dynamic> policyData) async {
-  try {
-    await FirebaseFirestore.instance
-        .collection('insurance_policies')
-        .add(policyData); // Adds a new policy to Firestore
+  Future<void> _addNewPolicy(Map<String, dynamic> policyData) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('insurance_policies')
+          .add(policyData);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Policy added successfully')),
-    );
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error adding policy: $e')),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Policy added successfully')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error adding policy: $e')),
+      );
+    }
   }
-}
-
 
   void _showNewPolicyDialog(BuildContext context) {
-    final TextEditingController _policyTypeController = TextEditingController();
-    final TextEditingController _fullNameController = TextEditingController();
-    final TextEditingController _emailController = TextEditingController();
+    final TextEditingController _coverageAmountController =
+        TextEditingController();
+    final TextEditingController _durationController = TextEditingController();
+    final TextEditingController _regionController = TextEditingController();
+    final TextEditingController _priceController = TextEditingController();
+    final TextEditingController _numberOfTravelersController =
+        TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('New Policy Application'),
+        title: Text('Add New Policy'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                  controller: _policyTypeController,
-                  decoration: InputDecoration(labelText: 'Policy Type')),
+                controller: _coverageAmountController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: 'Coverage Amount'),
+              ),
               TextField(
-                  controller: _fullNameController,
-                  decoration: InputDecoration(labelText: 'Full Name')),
+                controller: _durationController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: 'Duration (in days)'),
+              ),
               TextField(
-                  controller: _emailController,
-                  decoration: InputDecoration(labelText: 'Email')),
-              // Add other fields here
+                controller: _regionController,
+                decoration: InputDecoration(labelText: 'Region'),
+              ),
+              TextField(
+                controller: _priceController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: 'Price'),
+              ),
+              TextField(
+                controller: _numberOfTravelersController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: 'Number of Travelers'),
+              ),
             ],
           ),
         ),
         actions: [
           TextButton(
-              child: Text('Cancel'), onPressed: () => Navigator.pop(context)),
+            child: Text('Cancel'),
+            onPressed: () => Navigator.pop(context),
+          ),
           ElevatedButton(
             child: Text('Submit'),
             onPressed: () {
-              Map<String, dynamic> newPolicy = {
-                'policyNumber': 'POL-${DateTime.now().millisecondsSinceEpoch}',
-                'status': 'pending',
-                'policyType': _policyTypeController.text,
-                'userData': {
-                  'fullName': _fullNameController.text,
-                  'email': _emailController.text,
-                },
-                'coverageAmount': 500000.00,
-                'premiumAmount': 250.00,
-                'startDate': DateTime.now().toIso8601String(),
-                'endDate':
-                    DateTime.now().add(Duration(days: 365)).toIso8601String(),
+              final newPolicy = {
+                'id': DateTime.now().millisecondsSinceEpoch.toString(),
+                'provider': widget.user.fullName,
+                'provider_id': widget.user.uid,
+                'coverageAmount':
+                    double.tryParse(_coverageAmountController.text) ?? 0,
+                'duration': int.tryParse(_durationController.text) ?? 0,
+                'region': _regionController.text,
+                'price': double.tryParse(_priceController.text) ?? 0,
+                'numberOfTravelers':
+                    int.tryParse(_numberOfTravelersController.text) ?? 0,
+                
+                // No 'status' field — this is a company-created policy
               };
 
-              _addNewPolicy(newPolicy); // Add the new policy to Firebase
-              Navigator.pop(context);
+              _addNewPolicy(newPolicy).then((_) {
+                Navigator.pop(context);
+                setState(
+                    () {}); // this will re-trigger FutureBuilder to fetch policies again
+              });
             },
           ),
         ],
