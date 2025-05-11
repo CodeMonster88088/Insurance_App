@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app_test/models/insurance_model.dart';
+import 'package:flutter_app_test/models/PolicyRequestModel.dart';
 import 'package:intl/intl.dart';
 
 class PolicyDocumentScreen extends StatelessWidget {
-  final InsuranceModel policy;
+  final PolicyRequestModel policy;
 
-  // Constructor to accept the policy object
-  PolicyDocumentScreen({required this.policy});
+  const PolicyDocumentScreen({Key? key, required this.policy}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -24,27 +23,20 @@ class PolicyDocumentScreen extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 16),
-            _buildPolicyDetailRow('Provider', policy.provider),
-            _buildPolicyDetailRow('Coverage Amount', '${policy.coverageAmount} BHD'),
-            _buildPolicyDetailRow('Duration', '${policy.duration} days'),
-            _buildPolicyDetailRow('Coverage Region', policy.region),
+            _buildPolicyDetailRow('Customer Name', policy.customerName),
+            _buildPolicyDetailRow('Customer ID', policy.customerId),
+            _buildPolicyDetailRow('Provider ID', policy.providerId),
+            _buildPolicyDetailRow('Policy ID', policy.policyId),
+            _buildPolicyDetailRow('Number of Travelers', policy.numberOfTravelers.toString()),
+            _buildPolicyDetailRow('Total Price', '${policy.totalPrice.toStringAsFixed(2)} BHD'),
             _buildPolicyDetailRow(
               'Period',
               '${DateFormat('MMM dd, yyyy').format(policy.startDate)} - ${DateFormat('MMM dd, yyyy').format(policy.endDate)}',
             ),
-            if (policy.familyMembers.isNotEmpty) ...[
-              SizedBox(height: 16),
-              Text('Family Members:', style: TextStyle(fontSize: 16)),
-              for (var member in policy.familyMembers)
-                Text(
-                  '- $member',
-                  style: TextStyle(fontSize: 16),
-                ),
-            ],
+            _buildPolicyDetailRow('Status', policy.status),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Here, you can implement a function to download the policy or show it in a different way
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Downloading the policy document...')),
                 );
@@ -57,7 +49,6 @@ class PolicyDocumentScreen extends StatelessWidget {
     );
   }
 
-  // Helper method to display policy details
   Widget _buildPolicyDetailRow(String label, String value) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8),

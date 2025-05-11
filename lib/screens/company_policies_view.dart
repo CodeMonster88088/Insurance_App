@@ -312,7 +312,7 @@ class _CompanyPoliciesViewState extends State<CompanyPoliciesView> {
             child: Text('Submit'),
             onPressed: () {
               final newPolicy = {
-                'id': DateTime.now().millisecondsSinceEpoch.toString(),
+                'id': DateTime.now().millisecondsSinceEpoch.toString(), //TODO
                 'provider': widget.user.fullName,
                 'provider_id': widget.user.uid,
                 'coverageAmount':

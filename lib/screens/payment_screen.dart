@@ -84,7 +84,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     ),
                     SizedBox(height: 10),
                     _buildOrderDetail("Policy", widget.insurance.provider),
-                    _buildOrderDetail("Coverage", widget.insurance.coverageType),
+                    // _buildOrderDetail("Coverage", widget.insurance.coverageType),
                     _buildOrderDetail("Duration", "${widget.insurance.duration} days"),
                     if (widget.familyMembers.isNotEmpty)
                       _buildOrderDetail(

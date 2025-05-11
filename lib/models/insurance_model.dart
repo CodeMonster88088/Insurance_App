@@ -1,16 +1,15 @@
 class InsuranceModel {
-  final int id;
+  final String id;
   final String provider;
   final double coverageAmount;
   final int duration;
   final String region;
   final double price;
-  final DateTime startDate;
-  final DateTime endDate;
-  String status;
-  final List<String> familyMembers;
+  // final DateTime startDate;
+  // final DateTime endDate;
+
   final int numberOfTravelers;
-  final String coverageType;
+  // final String coverageType;
   final double rating;
 
   InsuranceModel({
@@ -20,12 +19,11 @@ class InsuranceModel {
     required this.duration,
     required this.region,
     required this.price,
-    required this.startDate,
-    required this.endDate,
-    required this.status,
-    required this.familyMembers,
+    // required this.startDate,
+    // required this.endDate,
+
     required this.numberOfTravelers,
-    required this.coverageType,
+    // required this.coverageType,
     required this.rating,
   });
 
@@ -37,12 +35,11 @@ class InsuranceModel {
       duration: map['duration'],
       region: map['region'],
       price: (map['price'] ?? 0).toDouble(),
-      startDate: DateTime.parse(map['startDate']),
-      endDate: DateTime.parse(map['endDate']),
-      status: map['status'],
-      familyMembers: List<String>.from(map['familyMembers'] ?? []),
+      // startDate: DateTime.parse(map['startDate']),
+      // endDate: DateTime.parse(map['endDate']),
+
       numberOfTravelers: map['numberOfTravelers'],
-      coverageType: map['coverageType'],
+      // coverageType: map['coverageType'],
       rating: (map['rating'] ?? 0).toDouble(),
     );
   }
@@ -55,12 +52,12 @@ class InsuranceModel {
       'duration': duration,
       'region': region,
       'price': price,
-      'startDate': startDate.toIso8601String(),
-      'endDate': endDate.toIso8601String(),
-      'status': status,
-      'familyMembers': familyMembers,
+      // 'startDate': startDate.toIso8601String(),
+      // 'endDate': endDate.toIso8601String(),
+
+      // 'familyMembers': familyMembers,
       'numberOfTravelers': numberOfTravelers,
-      'coverageType': coverageType,
+      // 'coverageType': coverageType,
       'rating': rating,
     };
   }
@@ -72,27 +69,27 @@ class InsuranceModel {
     int? duration,
     String? region,
     double? price,
-    DateTime? startDate,
-    DateTime? endDate,
+    // DateTime? startDate,
+    // DateTime? endDate,
     String? status,
-    List<String>? familyMembers,
+    // List<String>? familyMembers,
     int? numberOfTravelers,
-    String? coverageType,
+    // String? coverageType,
     double? rating,
   }) {
     return InsuranceModel(
-      id: id ?? this.id,
+      id: id?.toString() ?? this.id,
       provider: provider ?? this.provider,
       coverageAmount: coverageAmount ?? this.coverageAmount,
       duration: duration ?? this.duration,
       region: region ?? this.region,
       price: price ?? this.price,
-      startDate: startDate ?? this.startDate,
-      endDate: endDate ?? this.endDate,
-      status: status ?? this.status,
-      familyMembers: familyMembers ?? this.familyMembers,
+      // startDate: startDate ?? this.startDate,
+      // endDate: endDate ?? this.endDate,
+
+      // familyMembers: familyMembers ?? this.familyMembers,
       numberOfTravelers: numberOfTravelers ?? this.numberOfTravelers,
-      coverageType: coverageType ?? this.coverageType,
+      // coverageType: coverageType ?? this.coverageType,
       rating: rating ?? this.rating,
     );
   }
@@ -107,12 +104,12 @@ class InsuranceModel {
         other.duration == duration &&
         other.region == region &&
         other.price == price &&
-        other.startDate == startDate &&
-        other.endDate == endDate &&
-        other.status == status &&
-        other.familyMembers == familyMembers &&
+        // other.startDate == startDate &&
+        // other.endDate == endDate &&
+
+        // other.familyMembers == familyMembers &&
         other.numberOfTravelers == numberOfTravelers &&
-        other.coverageType == coverageType &&
+        // other.coverageType == coverageType &&
         other.rating == rating;
   }
 
@@ -124,17 +121,17 @@ class InsuranceModel {
         duration.hashCode ^
         region.hashCode ^
         price.hashCode ^
-        startDate.hashCode ^
-        endDate.hashCode ^
-        status.hashCode ^
-        familyMembers.hashCode ^
+        // startDate.hashCode ^
+        // endDate.hashCode ^
+
+        // familyMembers.hashCode ^
         numberOfTravelers.hashCode ^
-        coverageType.hashCode ^
+        // coverageType.hashCode ^
         rating.hashCode;
   }
 
   @override
   String toString() {
-    return 'InsuranceModel(id: $id, provider: $provider, coverageAmount: $coverageAmount, duration: $duration days, region: $region, price: $price, startDate: $startDate, endDate: $endDate, status: $status, familyMembers: $familyMembers, numberOfTravelers: $numberOfTravelers, coverageType: $coverageType, rating: $rating)';
+    return 'InsuranceModel(id: $id, provider: $provider duration: $duration days, region: $region, price: $price, coverageamount:$coverageAmount, numberOfTravelers: $numberOfTravelers, rating: $rating)';
   }
 }

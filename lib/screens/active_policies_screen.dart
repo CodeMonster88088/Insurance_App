@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_test/models/PolicyRequestModel.dart';
 import 'package:intl/intl.dart';
-import '../models/insurance_model.dart';
-import '../screens/policy_document_screen.dart';
 
 class ActivePoliciesScreen extends StatefulWidget {
   @override
@@ -9,36 +8,32 @@ class ActivePoliciesScreen extends StatefulWidget {
 }
 
 class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
-  List<InsuranceModel> activePolicies = [
-    InsuranceModel(
-      id: 12345,
-      provider: 'Gulf Insurance',
-      coverageAmount: 50000,
-      duration: 30,
-      region: 'Worldwide',
-      price: 120.0,
+  List<PolicyRequestModel> activePolicies = [
+    PolicyRequestModel(
+      id: 'req1',
+      policyId: 'pol123',
+      providerId: 'provider123',
+      customerId: 'user001',
+      customerName: 'Ali Abdulrasool',
+      status: 'Active',
       startDate: DateTime.now(),
       endDate: DateTime.now().add(Duration(days: 30)),
-      status: 'Active',
-      familyMembers: ['Spouse', 'Child 1'],
       numberOfTravelers: 2,
-      coverageType: 'Comprehensive',
-      rating: 3.2
+      totalPrice: 120.0,
+      region: 'Europe'
     ),
-    InsuranceModel(
-      id: 789012,
-      provider: 'Takaful Insurance',
-      coverageAmount: 100000,
-      duration: 15,
-      region: 'Schengen',
-      price: 85.0,
+    PolicyRequestModel(
+      id: 'req2',
+      policyId: 'pol456',
+      providerId: 'provider456',
+      customerId: 'user002',
+      customerName: 'Fatima Ali',
+      status: 'Active',
       startDate: DateTime.now().subtract(Duration(days: 10)),
       endDate: DateTime.now().add(Duration(days: 5)),
-      status: 'Active',
-      familyMembers: [],
       numberOfTravelers: 1,
-      coverageType: 'Basic',
-      rating: 5.0
+      totalPrice: 85.0,
+      region: 'Asia'
     ),
   ];
 
@@ -97,18 +92,13 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
     );
   }
 
-  Widget _buildPolicyCard(InsuranceModel policy, int index) {
+  Widget _buildPolicyCard(PolicyRequestModel policy, int index) {
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 2,
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PolicyDocumentScreen(policy: policy),
-            ),
-          );
+          // Navigate to view policy document screen if needed
         },
         child: Padding(
           padding: EdgeInsets.all(16),
@@ -119,7 +109,7 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    policy.provider,
+                    policy.customerName,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Chip(
@@ -134,20 +124,13 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
                 ],
               ),
               SizedBox(height: 8),
-              _buildPolicyDetailRow('Policy Number', policy.id.toString()),
-              _buildPolicyDetailRow('Coverage', '${policy.coverageAmount} BHD'),
-              _buildPolicyDetailRow('Duration', '${policy.duration} days'),
-              _buildPolicyDetailRow('Coverage Region', policy.region),
-              _buildPolicyDetailRow('Coverage Type', policy.coverageType),
+              _buildPolicyDetailRow('Policy ID', policy.policyId),
               _buildPolicyDetailRow('Travelers', policy.numberOfTravelers.toString()),
+              _buildPolicyDetailRow('Total Price', '${policy.totalPrice} BHD'),
               _buildPolicyDetailRow(
                 'Period',
                 '${DateFormat('MMM dd, yyyy').format(policy.startDate)} - ${DateFormat('MMM dd, yyyy').format(policy.endDate)}',
               ),
-              if (policy.familyMembers.isNotEmpty) ...[
-                SizedBox(height: 8),
-                _buildPolicyDetailRow('Family Members', policy.familyMembers.join(', ')),
-              ],
               SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -181,7 +164,7 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
     );
   }
 
-  void _showPolicyActions(InsuranceModel policy, int index) {
+  void _showPolicyActions(PolicyRequestModel policy, int index) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -190,22 +173,6 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ListTile(
-                leading: Icon(Icons.file_download),
-                title: Text('Download Policy Document'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _downloadPolicy(policy);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.email),
-                title: Text('Email Policy Document'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _emailPolicy(policy);
-                },
-              ),
               ListTile(
                 leading: Icon(Icons.receipt),
                 title: Text('File a Claim'),
@@ -220,7 +187,7 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
                   title: Text('Cancel Policy', style: TextStyle(color: Colors.red)),
                   onTap: () {
                     Navigator.pop(context);
-                    _confirmCancelPolicy(policy, index);
+                    _confirmCancelPolicy(index);
                   },
                 ),
             ],
@@ -230,25 +197,13 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
     );
   }
 
-  void _downloadPolicy(InsuranceModel policy) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Downloading policy document...')),
-    );
-  }
-
-  void _emailPolicy(InsuranceModel policy) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Sending policy document to your email...')),
-    );
-  }
-
-  void _fileClaim(InsuranceModel policy) {
+  void _fileClaim(PolicyRequestModel policy) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Redirecting to claims form...')),
     );
   }
 
-  void _confirmCancelPolicy(InsuranceModel policy, int index) {
+  void _confirmCancelPolicy(int index) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -273,7 +228,7 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
 
   void _cancelPolicy(int index) {
     setState(() {
-      activePolicies[index].status = 'Cancelled';
+      activePolicies[index] = activePolicies[index].copyWith(status: 'Cancelled');
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Policy cancelled successfully')),
@@ -291,11 +246,6 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
             CheckboxListTile(
               title: Text('Active Policies'),
               value: true,
-              onChanged: (value) {},
-            ),
-            CheckboxListTile(
-              title: Text('Expired Policies'),
-              value: false,
               onChanged: (value) {},
             ),
             CheckboxListTile(

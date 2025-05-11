@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app_test/models/insurance_model.dart';
+import 'package:flutter_app_test/models/PolicyRequestModel.dart';
 import 'package:intl/intl.dart';
 
 class PolicyDocumentScreen extends StatelessWidget {
-  final InsuranceModel policy;
+  final PolicyRequestModel policy;
 
   const PolicyDocumentScreen({Key? key, required this.policy}) : super(key: key);
 
@@ -24,26 +24,14 @@ class PolicyDocumentScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildSectionTitle('Policy Information'),
-                _buildInfoRow('Provider', policy.provider),
-                _buildInfoRow('Policy Number', policy.id.toString()),
-                _buildInfoRow('Coverage Type', policy.coverageType),
-                _buildInfoRow('Coverage Amount', '${policy.coverageAmount} BHD'),
-                _buildInfoRow('Price', '${policy.price} BHD'),
-                _buildInfoRow('Duration', '${policy.duration} days'),
-                _buildInfoRow('Region', policy.region),
+                _buildInfoRow('Policy ID', policy.policyId),
+                _buildInfoRow('Provider ID', policy.providerId),
+                _buildInfoRow('Customer Name', policy.customerName),
+                _buildInfoRow('Number of Travelers', policy.numberOfTravelers.toString()),
+                _buildInfoRow('Total Price', '${policy.totalPrice.toStringAsFixed(2)} BHD'),
                 _buildInfoRow('Start Date', DateFormat('MMM dd, yyyy').format(policy.startDate)),
                 _buildInfoRow('End Date', DateFormat('MMM dd, yyyy').format(policy.endDate)),
                 _buildInfoRow('Status', policy.status),
-
-                SizedBox(height: 20),
-                if (policy.familyMembers.isNotEmpty) ...[
-                  _buildSectionTitle('Family Members'),
-                  ...policy.familyMembers.map((member) => Text('• $member')).toList(),
-                ],
-
-                SizedBox(height: 20),
-                _buildSectionTitle('Additional Info'),
-                _buildInfoRow('Number of Travelers', policy.numberOfTravelers.toString()),
               ],
             ),
           ),

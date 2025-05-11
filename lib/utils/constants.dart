@@ -1,12 +1,11 @@
 import 'package:flutter_app_test/data/sample_data.dart';
 
-
-// Extract unique providers dynamically
+// Extract unique provider IDs dynamically
 final List<String> providers = [
-  ...{for (var insurance in sampleInsuranceData) insurance.provider}
+  ...{for (var policy in samplePolicyRequestData) policy.providerId}
 ];
 
-// Extract unique regions dynamically
+// If you later add a `region` field to PolicyRequestModel, this is how you'd extract it:
 final List<String> regions = [
-  ...{for (var insurance in sampleInsuranceData) insurance.region}
+  ...{for (var policy in samplePolicyRequestData) policy.region}
 ];

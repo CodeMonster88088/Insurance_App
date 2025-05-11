@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/insurance_model.dart';
@@ -11,15 +12,23 @@ class InsuranceSearchFilter extends StatefulWidget {
 }
 
 class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
+  @override
+  void initState() {
+    super.initState();
+    _loadDropdownOptions(); // This fetches providers and regions from Firestore
+  }
+
   DateTime? _fromDate;
   DateTime? _toDate;
-  RangeValues _priceRange = const RangeValues(20, 200);
-    bool _showPriceFilter = false; // Controls price filter toggle
+  RangeValues _priceRange = const RangeValues(1, 1000);
+  bool _showPriceFilter = false; // Controls price filter toggle
   int _numberOfTravelers = 1;
   String? _selectedProvider;
   String? _selectedRegion;
   bool _isLoading = false;
   List<InsuranceModel> _filteredResults = [];
+  List<String> _providers = [];
+  List<String> _regions = [];
 
   final TextEditingController _destinationController = TextEditingController();
   final TextEditingController _durationController = TextEditingController();
@@ -47,7 +56,7 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
     setState(() {
       _fromDate = null;
       _toDate = null;
-      _priceRange = const RangeValues(20, 100);
+      _priceRange = const RangeValues(1, 100);
       _numberOfTravelers = 1;
       _selectedProvider = null;
       _selectedRegion = null;
@@ -57,39 +66,105 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
     });
   }
 
-  void _performSearch() async {
+  Future<void> _loadDropdownOptions() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('insurance_policies')
+          .get();
+
+      final allData = snapshot.docs.map((doc) => doc.data()).toList();
+
+      final providersSet = <String>{};
+      final regionsSet = <String>{};
+
+      for (final data in allData) {
+        if (data['provider'] != null) providersSet.add(data['provider']);
+        if (data['region'] != null) regionsSet.add(data['region'].toString());
+      }
+
+      setState(() {
+        _providers = providersSet.toList()..sort();
+        _regions = regionsSet.toList()..sort();
+      });
+    } catch (e) {
+      print('Error loading dropdown options: $e');
+    }
+  }
+
+  double _toDouble(dynamic value) {
+    if (value is int) return value.toDouble();
+    if (value is double) return value;
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  int _toInt(dynamic value) {
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  void _performSearch({bool showAll = false}) async {
     setState(() => _isLoading = true);
 
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      Query query = FirebaseFirestore.instance.collection('insurance_policies');
 
-    _filteredResults = sampleInsuranceData.where((insurance) {
-      final matchesDuration = _durationController.text.isEmpty ||
-          insurance.duration == int.tryParse(_durationController.text);
+      // if (!showAll) {
+      //   query = query.where('status', isNull: true);
+      // }
 
-      final matchesRegion = _selectedRegion == null ||
-          insurance.region.toLowerCase() == _selectedRegion!.toLowerCase();
+      final querySnapshot = await query.get();
+      final allPolicies = querySnapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return InsuranceModel(
+          id: data['id']?.toString() ?? '',
+          provider: data['provider'] ?? '',
+          coverageAmount: _toDouble(data['coverageAmount']),
+          duration: _toInt(data['duration']),
+          region: data['region']?.toString() ?? '',
+          price: _toDouble(data['price']),
+          numberOfTravelers: _toInt(data['numberOfTravelers']),
+          rating: 0.0,
+        );
+      }).toList();
 
-      final matchesProvider = _selectedProvider == null ||
-          _selectedProvider == "All" || // Allow "All" to include all providers
-          insurance.provider.toLowerCase() == _selectedProvider!.toLowerCase();
+      _filteredResults = showAll
+          ? allPolicies
+          : allPolicies.where((insurance) {
+              final matchesDuration = _durationController.text.isEmpty ||
+                  insurance.duration == int.tryParse(_durationController.text);
 
-      final matchesTravelers = _numberOfTravelers == 1 ||
-          insurance.numberOfTravelers >= _numberOfTravelers;
+              final matchesRegion = _selectedRegion == null ||
+                  insurance.region.toLowerCase() ==
+                      _selectedRegion!.toLowerCase();
 
-      final matchesPrice = insurance.price >= _priceRange.start &&
-          insurance.price <= _priceRange.end;
+              final matchesProvider = _selectedProvider == null ||
+                  _selectedProvider == "All" ||
+                  insurance.provider.toLowerCase() ==
+                      _selectedProvider!.toLowerCase();
 
-      return matchesDuration &&
-          matchesRegion &&
-          matchesProvider &&
-          matchesTravelers &&
-          matchesPrice;
-    }).toList();
+              final matchesTravelers = _numberOfTravelers == 1 ||
+                  insurance.numberOfTravelers >= _numberOfTravelers;
+
+              final matchesPrice = !_showPriceFilter ||
+                  (insurance.price >= _priceRange.start &&
+                      insurance.price <= _priceRange.end);
+
+              return matchesDuration &&
+                  matchesRegion &&
+                  matchesProvider &&
+                  matchesTravelers &&
+                  matchesPrice;
+            }).toList();
+    } catch (e) {
+      print("Error fetching policies: $e");
+    }
 
     setState(() => _isLoading = false);
   }
 
-  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,56 +177,82 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              
-
-              // Duration (Read-Only, Auto-Filled)
-              TextField(
-                controller: _durationController,
-                decoration: InputDecoration(
-                  labelText: 'Duration (Days)',
-                  hintText: 'Select a date range to calculate duration',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                ),
-                readOnly: true,
-                onTap: _selectDateRange, // Opens date picker when tapped
-              ),
+              _buildTextField(
+                  'Destination', 'Enter Destination', _destinationController),
               const SizedBox(height: 15),
-
               _buildDateRangePicker(),
               const SizedBox(height: 15),
-
               _buildSlider("Number of Travelers", _numberOfTravelers, 1, 10,
                   (value) {
                 setState(() => _numberOfTravelers = value.toInt());
               }),
               const SizedBox(height: 15),
-
               _buildPriceRangeSlider(),
               const SizedBox(height: 15),
-
               _buildDropdown(
-                  "Select Insurance Provider", _selectedProvider, providers,
+                  "Select Insurance Provider", _selectedProvider, _providers,
                   (value) {
                 setState(() => _selectedProvider = value);
               }),
               const SizedBox(height: 15),
-
-              _buildDropdown("Select Region", _selectedRegion, regions,
+              _buildDropdown("Select Region", _selectedRegion, _regions,
                   (value) {
                 setState(() => _selectedRegion = value);
               }),
               const SizedBox(height: 20),
-
               _buildButtonRow(),
               const SizedBox(height: 20),
-
+              _buildAllPoliciesButton(), // Button to show all policies
+              const SizedBox(height: 20),
               _buildResultsList(),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildAllPoliciesButton() {
+    return ElevatedButton(
+      onPressed: _isLoading ? null : () => _performSearch(showAll: true),
+      child: const Text("Show All Policies"),
+    );
+  }
+
+  Widget _buildButtonRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        ElevatedButton(
+          onPressed: _isLoading ? null : () => _performSearch(),
+          child: _isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2))
+              : const Text("Search"),
+        ),
+        ElevatedButton(
+          onPressed: _clearFilters,
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+          child: const Text("Clear Filters"),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildResultsList() {
+    return _isLoading
+        ? Center(child: CircularProgressIndicator())
+        : _filteredResults.isEmpty
+            ? Center(child: Text("No results found. Adjust your filters."))
+            : ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: _filteredResults.length,
+                itemBuilder: (context, index) =>
+                    InsuranceListItem(insurance: _filteredResults[index]),
+              );
   }
 
   Widget _buildTextField(
@@ -213,7 +314,8 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
                 setState(() {
                   _showPriceFilter = value;
                   if (!_showPriceFilter) {
-                    _priceRange = const RangeValues(20, 200); // Reset if disabled
+                    _priceRange =
+                        const RangeValues(1, 1000); // Reset if disabled
                   }
                 });
               },
@@ -224,8 +326,8 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
           const Text("Price Range (BHD)"),
           RangeSlider(
             values: _priceRange,
-            min: 20,
-            max: 200,
+            min: 1,
+            max: 1000,
             divisions: 18,
             labels: RangeLabels(
               "${_priceRange.start.toStringAsFixed(2)} BHD",
@@ -238,61 +340,28 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
             },
           ),
           Text(
-            "Selected Range: ${_priceRange.start.toStringAsFixed(2)} BHD - ${_priceRange.end.toStringAsFixed(2)} BHD",
+            "Selected: ${_priceRange.start.toStringAsFixed(2)} BHD - ${_priceRange.end.toStringAsFixed(2)} BHD",
           ),
         ],
       ],
     );
   }
 
-
-  Widget _buildDropdown(String label, String? value, List<String> items,
-      ValueChanged<String?> onChanged) {
+  Widget _buildDropdown(String label, String? selectedValue,
+      List<String> options, ValueChanged<String?> onChanged) {
     return DropdownButtonFormField<String>(
-      value: value,
-      hint: Text(label),
-      items: items
-          .map((item) => DropdownMenuItem(value: item, child: Text(item)))
-          .toList(),
-      onChanged: onChanged,
+      value: selectedValue,
       decoration: InputDecoration(
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+      items: options.map((String option) {
+        return DropdownMenuItem<String>(
+          value: option,
+          child: Text(option),
+        );
+      }).toList(),
+      onChanged: onChanged,
     );
-  }
-
-  Widget _buildButtonRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        ElevatedButton(
-          onPressed: _isLoading ? null : _performSearch,
-          child: _isLoading
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2))
-              : const Text("Search"),
-        ),
-        ElevatedButton(
-          onPressed: _clearFilters,
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-          child: const Text("Clear Filters"),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildResultsList() {
-    return _isLoading
-        ? Center(child: CircularProgressIndicator())
-        : _filteredResults.isEmpty
-            ? Center(child: Text("No results found. Adjust your filters."))
-            : ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: _filteredResults.length,
-                itemBuilder: (context, index) =>
-                    InsuranceListItem(insurance: _filteredResults[index]),
-              );
   }
 }
