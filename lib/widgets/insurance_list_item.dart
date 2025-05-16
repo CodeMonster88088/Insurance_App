@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_test/models/user_model';
 import 'package:flutter_app_test/screens/activate_policy_screen.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/insurance_model.dart';
 
 class InsuranceListItem extends StatelessWidget {
   final InsuranceModel insurance;
+    final UserModel user; // Add this
 
-  const InsuranceListItem({required this.insurance, Key? key}) : super(key: key);
+
+  const InsuranceListItem({
+    required this.insurance,
+    required this.user, // Add this
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +22,10 @@ class InsuranceListItem extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ActivatePolicyScreen(insurance: insurance),
+            builder: (context) => ActivatePolicyScreen(
+              insurance: insurance,
+              user: user, // pass the user here
+            ),
           ),
         );
       },
@@ -42,9 +52,11 @@ class InsuranceListItem extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildDetail(LucideIcons.calendarDays, '${insurance.duration} days'),
+                  _buildDetail(
+                      LucideIcons.calendarDays, '${insurance.duration} days'),
                   _buildDetail(LucideIcons.map, insurance.region),
-                  _buildDetail(LucideIcons.users, '${insurance.numberOfTravelers}'),
+                  _buildDetail(
+                      LucideIcons.users, '${insurance.numberOfTravelers}'),
                 ],
               ),
 

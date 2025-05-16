@@ -11,6 +11,7 @@ class PaymentScreen extends StatefulWidget {
   final VoidCallback onPaymentSuccess;
   final List<Map<String, dynamic>> travelers;
   final double totalAmount;
+  final UserModel User;
 
   const PaymentScreen({
     required this.insurance,
@@ -18,6 +19,7 @@ class PaymentScreen extends StatefulWidget {
     required this.onPaymentSuccess,
     required this.travelers,
     required this.totalAmount,
+    required this.User,
     Key? key,
   }) : super(key: key);
 
@@ -87,7 +89,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       final request = PolicyRequestModel(
         id: docRef.id,
         policyId: widget.insurance.id,
-        providerId: widget.insurance.provider,
+        providerId: widget.User.uid,
         customerId: user.uid,
         customerName: userModel!.fullName,
         status: "pending",

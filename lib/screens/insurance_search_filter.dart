@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app_test/models/user_model';
 import 'package:intl/intl.dart';
 import '../models/insurance_model.dart';
 import '../data/sample_data.dart';
@@ -7,6 +8,9 @@ import '../widgets/insurance_list_item.dart';
 import '../utils/constants.dart';
 
 class InsuranceSearchFilter extends StatefulWidget {
+  final UserModel user;
+
+  const InsuranceSearchFilter({required this.user, Key? key}) : super(key: key);
   @override
   _InsuranceSearchFilterState createState() => _InsuranceSearchFilterState();
 }
@@ -251,7 +255,10 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
                 physics: NeverScrollableScrollPhysics(),
                 itemCount: _filteredResults.length,
                 itemBuilder: (context, index) =>
-                    InsuranceListItem(insurance: _filteredResults[index]),
+                    InsuranceListItem(
+                    insurance: _filteredResults[index],
+                    user: widget.user,  // pass the user here
+                  ),
               );
   }
 

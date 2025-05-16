@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_test/models/insurance_model.dart';
+import 'package:flutter_app_test/models/user_model';
 import 'package:flutter_app_test/screens/payment_screen.dart';
 import 'package:intl/intl.dart';
 
@@ -19,8 +20,13 @@ final List<String> countries = [
 
 class ActivatePolicyScreen extends StatefulWidget {
   final InsuranceModel insurance;
+  final UserModel user;  // <-- Add user here
 
-  const ActivatePolicyScreen({required this.insurance, Key? key}) : super(key: key);
+  const ActivatePolicyScreen({
+    required this.insurance,
+    required this.user,  // <-- Add user to constructor
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<ActivatePolicyScreen> createState() => _ActivatePolicyScreenState();
@@ -106,6 +112,7 @@ class _ActivatePolicyScreenState extends State<ActivatePolicyScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => PaymentScreen(
+          User: widget.user,
           insurance: widget.insurance,
           travelers: _travelers,
           totalAmount: widget.insurance.price * _travelers.length,

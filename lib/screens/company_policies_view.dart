@@ -13,7 +13,25 @@ class CompanyPoliciesView extends StatefulWidget {
 class _CompanyPoliciesViewState extends State<CompanyPoliciesView> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<List<Map<String, dynamic>>> _fetchPolicies() async {
+  Future<List<Map<String, dynamic>>> _fetchPolicyRequests() async {
+    final snapshot = await _firestore
+        .collection('policy_requests')
+        .where('provider_id', isEqualTo: widget.user.fullName)
+        .get();
+print('Current user UID: ${widget.user.uid}');
+print('Current user UID: ${widget.user.fullName}');
+
+
+    final requests = snapshot.docs.map((doc) {
+      final data = doc.data();
+      data['id'] = doc.id;
+      return data;
+    }).toList();
+
+    return requests;
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchMyPolicies() async {
     final snapshot = await _firestore
         .collection('insurance_policies')
         .where('provider_id', isEqualTo: widget.user.uid)
@@ -25,8 +43,6 @@ class _CompanyPoliciesViewState extends State<CompanyPoliciesView> {
       return data;
     }).toList();
 
-    print(
-        'Fetched ${policies.length} policies for provider ${widget.user.uid}');
     return policies;
   }
 
@@ -48,40 +64,33 @@ class _CompanyPoliciesViewState extends State<CompanyPoliciesView> {
             ],
           ),
         ),
-        body: FutureBuilder<List<Map<String, dynamic>>>(
-          future: _fetchPolicies(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            }
-            if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(child: Text('No policies found.'));
-            }
-
-            final allPolicies = snapshot.data!;
-
-// These are bookings by users for the company's policies
-            final requests = allPolicies
-                .where((p) =>
-                    p['status'] != null && p['provider_id'] == widget.user.uid)
-                .toList();
-
-// These are policies created by this company
-            final myPolicies = allPolicies
-                .where((p) =>
-                    p['status'] == null && p['provider_id'] == widget.user.uid)
-                .toList();
-
-            return TabBarView(
-              children: [
-                _buildPolicyList(requests,
-                    isRequestTab: true), // Show user data and actions
-                _buildPolicyList(myPolicies,
-                    isRequestTab:
-                        false), // Just show company-created policy info
-              ],
-            );
-          },
+        body: TabBarView(
+          children: [
+            FutureBuilder<List<Map<String, dynamic>>>(
+              future: _fetchPolicyRequests(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text('No policy requests found.'));
+                }
+                return _buildPolicyList(snapshot.data!, isRequestTab: true);
+              },
+            ),
+            FutureBuilder<List<Map<String, dynamic>>>(
+              future: _fetchMyPolicies(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text('No policies found.'));
+                }
+                return _buildPolicyList(snapshot.data!, isRequestTab: false);
+              },
+            ),
+          ],
         ),
         floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),
@@ -156,8 +165,8 @@ class _CompanyPoliciesViewState extends State<CompanyPoliciesView> {
                     '\$${(policy['coverageAmount'] ?? 0).toStringAsFixed(2)}'),
                 _buildPolicyDetailItem('Premium Amount',
                     '\$${(policy['premiumAmount'] ?? 0).toStringAsFixed(2)}'),
-                _buildPolicyDetailItem('Duration',
-                    '${policy['duration']} days'),
+                _buildPolicyDetailItem(
+                    'Duration', '${policy['duration']} days'),
                 Divider(),
                 if (isRequestTab &&
                     policy['documents'] != null &&
@@ -322,7 +331,7 @@ class _CompanyPoliciesViewState extends State<CompanyPoliciesView> {
                 'price': double.tryParse(_priceController.text) ?? 0,
                 'numberOfTravelers':
                     int.tryParse(_numberOfTravelersController.text) ?? 0,
-                
+
                 // No 'status' field — this is a company-created policy
               };
 

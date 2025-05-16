@@ -17,6 +17,9 @@ import 'package:flutter_app_test/screens/emergency_screen.dart';
 import 'package:flutter_app_test/screens/claim_status_screen.dart';
 
 class HomePage extends StatefulWidget {
+  final UserModel user;  // <-- add this
+
+  const HomePage({required this.user, Key? key}) : super(key: key);
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -33,7 +36,7 @@ class _HomePageState extends State<HomePage> {
     fetchUserData();
     _pages = [
       _buildHomeContent(),
-      InsuranceSearchFilter(),
+      InsuranceSearchFilter(user: widget.user,),
       ActivePoliciesScreen(),
       _buildHelpCenterScreen(),
       CompanyClaimsView(),
@@ -51,7 +54,7 @@ class _HomePageState extends State<HomePage> {
           userModel = UserModel.fromMap(doc.data()!, uid);
           _pages = [
             _buildHomeContent(),
-            InsuranceSearchFilter(),
+            InsuranceSearchFilter(user: widget.user,),
             ActivePoliciesScreen(),
             _buildHelpCenterScreen(),
             CompanyClaimsView(),

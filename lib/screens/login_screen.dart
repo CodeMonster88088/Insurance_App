@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_test/Services/auth.dart';
+import 'package:flutter_app_test/models/user_model';
 import 'package:flutter_app_test/screens/company_home.dart';
 import 'package:flutter_app_test/screens/home.dart';
 import 'signup.dart';
@@ -19,74 +20,71 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _loading = false;
   String? _errorMessage;
 
-  void _handleLogin() async {
-  if (_formKey.currentState!.validate()) {
-    setState(() {
-      _loading = true;
-      _errorMessage = null;
-    });
-
-    var user = await _auth.signInWithEmailAndPassword(
-      _emailController.text.trim(),
-      _passwordController.text.trim(),
-    );
-
-    setState(() => _loading = false);
-
-    if (user != null) {
-      try {
-        // Get user role from Firestore
-        final doc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
-
-        final role = doc.data()?['role'];
-
-        if (role == 'customer') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => HomePage()),
-          );
-        } else if (role == 'company') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => CompanyHomePage()),
-          );
-        } else {
-          setState(() => _errorMessage = 'Unknown user role.');
-        }
-      } catch (e) {
-        print('Error retrieving user role: $e');
-        setState(() => _errorMessage = 'Failed to get user role.');
+  // Fetch user data from Firestore and convert to UserModel
+  Future<UserModel?> fetchUserData(String uid) async {
+    try {
+      final doc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (doc.exists) {
+        return UserModel.fromMap(doc.data()!, doc.id);
       }
-    } else {
-      setState(() =>
-          _errorMessage = 'Login failed. Please check your credentials.');
+    } catch (e) {
+      print('Error fetching user data: $e');
     }
+    return null;
   }
-}
 
+  void _handleLogin() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _loading = true;
+        _errorMessage = null;
+      });
 
-  void _handleAnonymousLogin() async {
-    setState(() {
-      _loading = true;
-      _errorMessage = null;
-    });
+      // Assuming signInWithEmailAndPassword returns a Firebase User object or null
+      final user = await _auth.signInWithEmailAndPassword(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+      );
 
-    var user = await _auth.signInAnon();
+      setState(() => _loading = false);
 
-    setState(() => _loading = false);
+      if (user != null) {
+        try {
+          // Fetch full user data from Firestore
+          UserModel? userModel = await fetchUserData(user.uid);
 
-    if (user != null) {
-      print('Signed in anonymously: ${user.uid}');
-      // Navigate to the main app screen if needed
-      Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => HomePage()),
-        );
-    } else {
-      setState(() => _errorMessage = 'Anonymous login failed.');
+          if (userModel == null) {
+            setState(() => _errorMessage = 'Failed to load user data.');
+            return;
+          }
+
+          final role = userModel.role; // Make sure UserModel has this field
+
+          if (role == 'customer') {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => HomePage(
+                        user: userModel,
+                      )),
+            );
+          } else if (role == 'company') {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => CompanyHomePage()),
+            );
+          } else {
+            setState(() => _errorMessage = 'Unknown user role.');
+          }
+        } catch (e) {
+          print('Error retrieving user role: $e');
+          setState(() => _errorMessage = 'Failed to get user role.');
+        }
+      } else {
+        setState(() =>
+            _errorMessage = 'Login failed. Please check your credentials.');
+      }
     }
   }
 
@@ -140,30 +138,17 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(height: 20),
               _loading
                   ? CircularProgressIndicator()
-                  : Column(
-                      children: [
-                        ElevatedButton(
-                          onPressed: _handleLogin,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blueAccent,
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 50, vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: Text('Login'),
+                  : ElevatedButton(
+                      onPressed: _handleLogin,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        SizedBox(height: 10),
-                        OutlinedButton(
-                          onPressed: _handleAnonymousLogin,
-                          style: OutlinedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 40, vertical: 15),
-                          ),
-                          child: Text('Continue as Guest'),
-                        ),
-                      ],
+                      ),
+                      child: Text('Login'),
                     ),
               SizedBox(height: 10),
               TextButton(
