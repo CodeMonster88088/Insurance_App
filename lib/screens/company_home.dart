@@ -13,47 +13,57 @@ class CompanyHomePage extends StatefulWidget {
 
 class _CompanyHomePageState extends State<CompanyHomePage> {
   int _selectedIndex = 0;
-
   final List<Widget> _pages = [];
   late UserModel currentUser;
+  bool _isLoading = true; // ✅ Added loading flag
   @override
-void initState() {
-  super.initState();
-  _loadUser();
-}
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
 
-Future<void> _loadUser() async {
-  final uid = FirebaseAuth.instance.currentUser?.uid;
-  if (uid != null) {
-    final snapshot = await FirebaseFirestore.instance.collection('users').doc(uid).get();
-    if (snapshot.exists) {
-      setState(() {
-        // Pass both the snapshot data and the uid to fromMap
-        currentUser = UserModel.fromMap(snapshot.data()!, uid); // Updated line
-        _pages.addAll([
-          _buildDashboard(),
-          CompanyPoliciesView(user: currentUser), // Now CompanyPoliciesView will get the user model
-          CompanyClaimsView(),
-        ]);
-      });
+  Future<void> _loadUser() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      final snapshot =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (snapshot.exists) {
+        setState(() {
+          currentUser = UserModel.fromMap(snapshot.data()!, uid);
+          _pages.addAll([
+            _buildDashboard(),
+            CompanyPoliciesView(user: currentUser),
+            CompanyClaimsView(),
+          ]);
+          _isLoading = false; // ✅ Fix: finish loading
+        });
+      } else {
+        // Handle the case where the user document does not exist
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("User data not found in Firestore.")),
+        );
+      }
+    } else {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("User is not logged in.")),
+      );
     }
   }
-}
-
 
   void _onItemTapped(int index) {
     setState(() => _selectedIndex = index);
   }
-  
+
   void _handleLogout(BuildContext context) async {
-  // Call your AuthService sign out method here
-  // Assuming you have an AuthService with signOut()
-  await AuthService().signOut();
+    // Call your AuthService sign out method here
+    // Assuming you have an AuthService with signOut()
+    await AuthService().signOut();
 
-  // Navigate to the login screen
-  Navigator.pushReplacementNamed(context, '/login');
-}
-
+    // Navigate to the login screen
+    Navigator.pushReplacementNamed(context, '/login');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,25 +82,29 @@ Future<void> _loadUser() async {
           ),
         ],
       ),
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.policy),
-            label: 'Policies',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.receipt_long),
-            label: 'Claims',
-          ),
-        ],
-      ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator()) // ✅ Show loading
+          : _pages[_selectedIndex], // ✅ Access only after loading
+      bottomNavigationBar: _isLoading
+          ? SizedBox.shrink() // ✅ Hide nav bar until ready
+          : BottomNavigationBar(
+              currentIndex: _selectedIndex,
+              onTap: _onItemTapped,
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.dashboard),
+                  label: 'Dashboard',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.policy),
+                  label: 'Policies',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.receipt_long),
+                  label: 'Claims',
+                ),
+              ],
+            ),
     );
   }
 

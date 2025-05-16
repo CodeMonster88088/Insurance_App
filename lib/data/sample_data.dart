@@ -13,6 +13,12 @@ final List<PolicyRequestModel> samplePolicyRequestData = [
     numberOfTravelers: 2,
     totalPrice: 50.0,
     region: 'Europe',
+    paymentMethod: 'Card',
+    createdAt: DateTime(2023, 5, 28),
+    travelers: [
+      {'name': 'John Doe', 'age': 30},
+      {'name': 'Jane Doe', 'age': 28},
+    ],
   ),
   PolicyRequestModel(
     id: 'REQ002',
@@ -26,6 +32,14 @@ final List<PolicyRequestModel> samplePolicyRequestData = [
     numberOfTravelers: 4,
     totalPrice: 120.0,
     region: 'Middle East',
+    paymentMethod: 'BenefitPay',
+    createdAt: DateTime(2023, 5, 27),
+    travelers: [
+      {'name': 'Alice Smith', 'age': 35},
+      {'name': 'Bob Smith', 'age': 36},
+      {'name': 'Charlie Smith', 'age': 12},
+      {'name': 'Daisy Smith', 'age': 10},
+    ],
   ),
   PolicyRequestModel(
     id: 'REQ003',
@@ -39,6 +53,11 @@ final List<PolicyRequestModel> samplePolicyRequestData = [
     numberOfTravelers: 1,
     totalPrice: 80.0,
     region: 'Asia',
+    paymentMethod: 'ApplePay',
+    createdAt: DateTime(2023, 5, 29),
+    travelers: [
+      {'name': 'Michael Brown', 'age': 40},
+    ],
   ),
   PolicyRequestModel(
     id: 'REQ004',
@@ -52,6 +71,13 @@ final List<PolicyRequestModel> samplePolicyRequestData = [
     numberOfTravelers: 3,
     totalPrice: 90.0,
     region: 'Africa',
+    paymentMethod: 'Card',
+    createdAt: DateTime(2023, 5, 25),
+    travelers: [
+      {'name': 'David Wilson', 'age': 38},
+      {'name': 'Ella Wilson', 'age': 34},
+      {'name': 'Tom Wilson', 'age': 5},
+    ],
   ),
   PolicyRequestModel(
     id: 'REQ005',
@@ -65,5 +91,11 @@ final List<PolicyRequestModel> samplePolicyRequestData = [
     numberOfTravelers: 2,
     totalPrice: 75.0,
     region: 'North America',
+    paymentMethod: 'BenefitPay',
+    createdAt: DateTime(2023, 5, 26),
+    travelers: [
+      {'name': 'Grace Lee', 'age': 29},
+      {'name': 'Henry Lee', 'age': 30},
+    ],
   ),
 ];

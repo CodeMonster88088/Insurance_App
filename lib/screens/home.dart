@@ -8,7 +8,6 @@ import 'package:flutter_app_test/screens/login_screen.dart';
 import 'package:flutter_app_test/screens/profile_screen.dart';
 import 'package:flutter_app_test/screens/settings_screen.dart';
 import 'package:flutter_app_test/screens/company_claims_view.dart';
-import 'package:flutter_app_test/screens/company_policies_view.dart';
 import 'package:flutter_app_test/screens/company_home.dart';
 import 'package:flutter_app_test/screens/my_claims_screen.dart';
 import 'package:flutter_app_test/screens/documents_screen.dart';
@@ -26,17 +25,27 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   late List<Widget> _pages;
   UserModel? userModel;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     fetchUserData();
+    _pages = [
+      _buildHomeContent(),
+      InsuranceSearchFilter(),
+      ActivePoliciesScreen(),
+      _buildHelpCenterScreen(),
+      CompanyClaimsView(),
+      CompanyHomePage(),
+    ];
   }
 
   void fetchUserData() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
-      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final doc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
       if (doc.exists) {
         setState(() {
           userModel = UserModel.fromMap(doc.data()!, uid);
@@ -48,432 +57,436 @@ class _HomePageState extends State<HomePage> {
             CompanyClaimsView(),
             CompanyHomePage(),
           ];
+          _isLoading = false;
         });
       }
     }
   }
 
+  @override
   Widget _buildHomeContent() {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          // Hero Banner
-          Container(
-            height: 280,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.blue[800]!, Colors.blue[600]!],
-              ),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
-              ),
-            ),
-            child: Stack(
-              children: [
-                Positioned(
-                  right: -50,
-                  top: -50,
-                  child: Container(
-                    width: 200,
-                    height: 200,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Welcome back,',
-                        style: TextStyle(
-                          fontSize: 22,
-                          color: Colors.white.withOpacity(0.9),
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'John Doe!',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => ActivePoliciesScreen()),
-                          );
-                        },
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.verified_user, color: Colors.white),
-                              SizedBox(width: 8),
-                              Text(
-                                'Policy Active',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 20),
-
-          // Quick Actions
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildQuickAction(
-                  icon: Icons.medical_services,
-                  label: 'My Claims',
-                  color: Colors.green,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => MyClaimsScreen()),
-                    );
-                  },
-                ),
-                _buildQuickAction(
-                  icon: Icons.document_scanner,
-                  label: 'Documents',
-                  color: Colors.blue,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => DocumentsScreen()),
-                    );
-                  },
-                ),
-                _buildQuickAction(
-                  icon: Icons.family_restroom,
-                  label: 'Family',
-                  color: Colors.purple,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => FamilyMembersScreen()),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 30),
-
-          // Active Policy Card
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ActivePoliciesScreen()),
-                );
-              },
-              child: Container(
-                padding: EdgeInsets.all(20),
+    return Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Hero Banner
+              Container(
+                height: 280,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 10,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Colors.blue[800]!, Colors.blue[600]!],
+                  ),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(30),
+                    bottomRight: Radius.circular(30),
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Stack(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Active Policy',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue[900],
-                          ),
+                    Positioned(
+                      right: -50,
+                      top: -50,
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          shape: BoxShape.circle,
                         ),
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.green[50],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            'Active',
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Welcome back,',
                             style: TextStyle(
-                              color: Colors.green[800],
-                              fontWeight: FontWeight.bold,
+                              fontSize: 22,
+                              color: Colors.white.withOpacity(0.9),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 15),
-                    Row(
-                      children: [
-                        Icon(Icons.health_and_safety, color: Colors.blue, size: 30),
-                        SizedBox(width: 15),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Global Health Plus',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                'Expires: Dec 31, 2024',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
+                          SizedBox(height: 8),
+                          Text(
+                            '${userModel?.fullName}!',
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
-                        Icon(Icons.chevron_right, color: Colors.grey),
-                      ],
-                    ),
-                    SizedBox(height: 15),
-                    Divider(),
-                    SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildPolicyDetail(
-                          title: 'Coverage',
-                          value: '\$500,000',
-                        ),
-                        _buildPolicyDetail(
-                          title: 'Deductible',
-                          value: '\$1,000',
-                        ),
-                        _buildPolicyDetail(
-                          title: 'Renewal',
-                          value: 'Monthly',
-                        ),
-                      ],
+                          SizedBox(height: 16),
+                          InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        ActivePoliciesScreen()),
+                              );
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.verified_user,
+                                      color: Colors.white),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Policy Active',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-            ),
-          ),
-          SizedBox(height: 30),
 
-          // Features Section
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Quick Features',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue[900],
-                  ),
-                ),
-                SizedBox(height: 15),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildFeatureCard(
-                        icon: Icons.medical_information,
-                        title: 'Telemedicine',
-                        color: Colors.blue[400]!,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => TelemedicineScreen()),
-                          );
-                        },
-                      ),
-                      SizedBox(width: 15),
-                      _buildFeatureCard(
-                        icon: Icons.airport_shuttle,
-                        title: 'Emergency',
-                        color: Colors.red[400]!,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => EmergencyScreen()),
-                          );
-                        },
-                      ),
-                      SizedBox(width: 15),
-                      _buildFeatureCard(
-                        icon: Icons.person,
-                        title: 'Contact Agent',
-                        color: Colors.green[400]!,
-                        onTap: () => _contactAgent(),
-                      ),
-                      SizedBox(width: 15),
-                      _buildFeatureCard(
-                        icon: Icons.receipt,
-                        title: 'Claim Status',
-                        color: Colors.orange[400]!,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => ClaimStatusScreen()),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 30),
+              SizedBox(height: 20),
 
-          // Emergency Section
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Container(
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.red[600]!, Colors.red[400]!],
+              // Quick Actions
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildQuickAction(
+                      icon: Icons.medical_services,
+                      label: 'My Claims',
+                      color: Colors.green,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => MyClaimsScreen()),
+                        );
+                      },
+                    ),
+                    _buildQuickAction(
+                      icon: Icons.document_scanner,
+                      label: 'Documents',
+                      color: Colors.blue,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => DocumentsScreen()),
+                        );
+                      },
+                    ),
+                    _buildQuickAction(
+                      icon: Icons.family_restroom,
+                      label: 'Family',
+                      color: Colors.purple,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => FamilyMembersScreen()),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-                borderRadius: BorderRadius.circular(20),
               ),
-              child: Row(
-                children: [
-                  Icon(Icons.warning_amber, color: Colors.white, size: 40),
-                  SizedBox(width: 15),
-                  Expanded(
+              SizedBox(height: 30),
+
+              // Active Policy Card
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ActivePoliciesScreen()),
+                    );
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Emergency Assistance',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Active Policy',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue[900],
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.green[50],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                'Active',
+                                style: TextStyle(
+                                  color: Colors.green[800],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        SizedBox(height: 5),
-                        Text(
-                          '24/7 emergency support available worldwide',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
-                            fontSize: 14,
-                          ),
+                        SizedBox(height: 15),
+                        Row(
+                          children: [
+                            Icon(Icons.health_and_safety,
+                                color: Colors.blue, size: 30),
+                            SizedBox(width: 15),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Global Health Plus',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    'Expires: Dec 31, 2024',
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(Icons.chevron_right, color: Colors.grey),
+                          ],
+                        ),
+                        SizedBox(height: 15),
+                        Divider(),
+                        SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildPolicyDetail(
+                                title: 'Coverage', value: '\$500,000'),
+                            _buildPolicyDetail(
+                                title: 'Deductible', value: '\$1,000'),
+                            _buildPolicyDetail(
+                                title: 'Renewal', value: 'Monthly'),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  IconButton(
-                    icon: Icon(Icons.phone, color: Colors.white),
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Emergency call initiated')),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SizedBox(height: 30),
-
-          // Why Choose Us
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Why Choose Amaan Insurance?',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue[900],
-                  ),
                 ),
-                SizedBox(height: 15),
-                GridView.count(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  crossAxisCount: 2,
-                  childAspectRatio: 1.5,
-                  crossAxisSpacing: 15,
-                  mainAxisSpacing: 15,
+              ),
+              SizedBox(height: 30),
+
+              // Features Section
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildBenefitCard(
-                      icon: Icons.medical_services,
-                      title: 'Global Coverage',
-                      subtitle: 'Coverage in 150+ countries',
-                      color: Colors.blue,
+                    Text(
+                      'Quick Features',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue[900],
+                      ),
                     ),
-                    _buildBenefitCard(
-                      icon: Icons.attach_money,
-                      title: 'Affordable Plans',
-                      subtitle: 'Flexible payment options',
-                      color: Colors.green,
-                    ),
-                    _buildBenefitCard(
-                      icon: Icons.support_agent,
-                      title: '24/7 Support',
-                      subtitle: 'Always here to help',
-                      color: Colors.orange,
-                    ),
-                    _buildBenefitCard(
-                      icon: Icons.health_and_safety,
-                      title: 'Comprehensive Care',
-                      subtitle: 'All medical needs covered',
-                      color: Colors.purple,
+                    SizedBox(height: 15),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildFeatureCard(
+                            icon: Icons.medical_information,
+                            title: 'Telemedicine',
+                            color: Colors.blue[400]!,
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => TelemedicineScreen()),
+                            ),
+                          ),
+                          SizedBox(width: 15),
+                          _buildFeatureCard(
+                            icon: Icons.airport_shuttle,
+                            title: 'Emergency',
+                            color: Colors.red[400]!,
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => EmergencyScreen()),
+                            ),
+                          ),
+                          SizedBox(width: 15),
+                          _buildFeatureCard(
+                            icon: Icons.person,
+                            title: 'Contact Agent',
+                            color: Colors.green[400]!,
+                            onTap: _contactAgent,
+                          ),
+                          SizedBox(width: 15),
+                          _buildFeatureCard(
+                            icon: Icons.receipt,
+                            title: 'Claim Status',
+                            color: Colors.orange[400]!,
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ClaimStatusScreen()),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+              SizedBox(height: 30),
+
+              // Emergency Section
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.red[600]!, Colors.red[400]!],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.warning_amber, color: Colors.white, size: 40),
+                      SizedBox(width: 15),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Emergency Assistance',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            Text(
+                              '24/7 emergency support available worldwide',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.phone, color: Colors.white),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Emergency call initiated')),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 30),
+
+              // Why Choose Us
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Why Choose Amaan Insurance?',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue[900],
+                      ),
+                    ),
+                    SizedBox(height: 15),
+                    Wrap(
+                      spacing: 15,
+                      runSpacing: 15,
+                      children: [
+                        _buildBenefitCard(
+                          icon: Icons.medical_services,
+                          title: 'Global Coverage',
+                          subtitle: 'Coverage in 150+ countries',
+                          color: Colors.blue,
+                        ),
+                        _buildBenefitCard(
+                          icon: Icons.attach_money,
+                          title: 'Affordable Plans',
+                          subtitle: 'Flexible payment options',
+                          color: Colors.green,
+                        ),
+                        _buildBenefitCard(
+                          icon: Icons.support_agent,
+                          title: '24/7 Support',
+                          subtitle: 'Always here to help',
+                          color: Colors.orange,
+                        ),
+                        _buildBenefitCard(
+                          icon: Icons.health_and_safety,
+                          title: 'Comprehensive Care',
+                          subtitle: 'All medical needs covered',
+                          color: Colors.purple,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 30),
+            ],
           ),
-          SizedBox(height: 30),
-        ],
+        ),
       ),
     );
   }
@@ -870,35 +883,41 @@ class _HomePageState extends State<HomePage> {
           padding: EdgeInsets.all(20),
           child: Column(
             children: [
-              Text('Frequently Asked Questions', 
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('Frequently Asked Questions',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               Expanded(
                 child: ListView(
                   children: [
                     ListTile(
                       title: Text('How do I update my personal information?'),
-                      subtitle: Text('You can update your details in the Profile section'),
+                      subtitle: Text(
+                          'You can update your details in the Profile section'),
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => ProfileScreen()),
+                          MaterialPageRoute(
+                              builder: (context) => ProfileScreen()),
                         );
                       },
                     ),
                     ListTile(
-                      title: Text('What should I do if I lose my insurance card?'),
-                      subtitle: Text('Contact customer support for a replacement'),
+                      title:
+                          Text('What should I do if I lose my insurance card?'),
+                      subtitle:
+                          Text('Contact customer support for a replacement'),
                       onTap: () => _showCallSupportDialog(context),
                     ),
                     ListTile(
                       title: Text('How do I add a family member to my plan?'),
-                      subtitle: Text('Use the account settings or contact support'),
+                      subtitle:
+                          Text('Use the account settings or contact support'),
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => FamilyMembersScreen()),
+                          MaterialPageRoute(
+                              builder: (context) => FamilyMembersScreen()),
                         );
                       },
                     ),

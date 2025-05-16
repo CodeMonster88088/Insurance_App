@@ -22,7 +22,7 @@ class UserModel {
       uid: uid,
       email: map['email'] ?? '',
       role: map['role'] ?? 'customer',
-      fullName: map['fullName'] ?? '',
+      fullName: map['fullName'] ?? 'Unknown!',
       phoneNumber: map['phoneNumber'],
       address: map['address'],
       idNumber: map['idNumber'],

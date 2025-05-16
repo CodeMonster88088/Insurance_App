@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_test/screens/company_claims_view.dart';
 import 'package:flutter_app_test/screens/company_home.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_app_test/screens/insurance_search_filter.dart';
 import 'package:flutter_app_test/screens/login_screen.dart';
 
 void main() async {
@@ -35,7 +36,8 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => LoginScreen(),
         '/companyHome': (context) => CompanyHomePage(),
-        '/claims' :(context) => CompanyClaimsView()
+        '/claims' :(context) => CompanyClaimsView(),
+        '/policies' :(context) => InsuranceSearchFilter(),
         // Other routes can be added here as needed
       },
     );

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_test/models/PolicyRequestModel.dart';
 import 'package:intl/intl.dart';
@@ -8,40 +10,19 @@ class ActivePoliciesScreen extends StatefulWidget {
 }
 
 class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
-  List<PolicyRequestModel> activePolicies = [
-    PolicyRequestModel(
-      id: 'req1',
-      policyId: 'pol123',
-      providerId: 'provider123',
-      customerId: 'user001',
-      customerName: 'Ali Abdulrasool',
-      status: 'Active',
-      startDate: DateTime.now(),
-      endDate: DateTime.now().add(Duration(days: 30)),
-      numberOfTravelers: 2,
-      totalPrice: 120.0,
-      region: 'Europe'
-    ),
-    PolicyRequestModel(
-      id: 'req2',
-      policyId: 'pol456',
-      providerId: 'provider456',
-      customerId: 'user002',
-      customerName: 'Fatima Ali',
-      status: 'Active',
-      startDate: DateTime.now().subtract(Duration(days: 10)),
-      endDate: DateTime.now().add(Duration(days: 5)),
-      numberOfTravelers: 1,
-      totalPrice: 85.0,
-      region: 'Asia'
-    ),
-  ];
+  String? currentUserId;
+
+  @override
+  void initState() {
+    super.initState();
+    currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Active Policies'),
+        title: Text('My Policies'),
         actions: [
           IconButton(
             icon: Icon(Icons.filter_list),
@@ -49,16 +30,29 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
           ),
         ],
       ),
-      body: activePolicies.isEmpty
-          ? _buildEmptyState()
-          : ListView.builder(
-              itemCount: activePolicies.length,
-              itemBuilder: (context, index) => _buildPolicyCard(activePolicies[index], index),
-            ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () {
-          // Navigate to add/browse policies screen
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('policy_requests')
+            .where('customerId', isEqualTo: currentUserId)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return _buildEmptyState();
+          }
+
+          List<PolicyRequestModel> policies = snapshot.data!.docs.map((doc) {
+            return PolicyRequestModel.fromFirestore(doc);
+          }).toList();
+
+          return ListView.builder(
+            itemCount: policies.length,
+            itemBuilder: (context, index) =>
+                _buildPolicyCard(policies[index], index),
+          );
         },
       ),
     );
@@ -72,18 +66,18 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
           Icon(Icons.assignment, size: 80, color: Colors.grey[300]),
           SizedBox(height: 16),
           Text(
-            'No Active Policies',
+            'No Policies Found',
             style: TextStyle(fontSize: 20, color: Colors.grey),
           ),
           SizedBox(height: 8),
           Text(
-            'Get started by purchasing a travel insurance policy',
+            'Start by purchasing a travel insurance policy.',
             style: TextStyle(color: Colors.grey),
           ),
           SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
-              // Navigate to insurance search
+              Navigator.pushNamed(context, '/policies');
             },
             child: Text('Browse Policies'),
           ),
@@ -98,7 +92,7 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
       elevation: 2,
       child: InkWell(
         onTap: () {
-          // Navigate to view policy document screen if needed
+          // Navigate to policy details screen
         },
         child: Padding(
           padding: EdgeInsets.all(16),
@@ -117,15 +111,14 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
                       policy.status,
                       style: TextStyle(color: Colors.white),
                     ),
-                    backgroundColor: policy.status == 'Active'
-                        ? Colors.green
-                        : Colors.orange,
+                    backgroundColor: _getStatusColor(policy.status),
                   ),
                 ],
               ),
               SizedBox(height: 8),
               _buildPolicyDetailRow('Policy ID', policy.policyId),
-              _buildPolicyDetailRow('Travelers', policy.numberOfTravelers.toString()),
+              _buildPolicyDetailRow(
+                  'Travelers', policy.numberOfTravelers.toString()),
               _buildPolicyDetailRow('Total Price', '${policy.totalPrice} BHD'),
               _buildPolicyDetailRow(
                 'Period',
@@ -136,7 +129,7 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                    onPressed: () => _showPolicyActions(policy, index),
+                    onPressed: () => _showPolicyActions(policy),
                     child: Text('ACTIONS'),
                   ),
                 ],
@@ -164,7 +157,7 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
     );
   }
 
-  void _showPolicyActions(PolicyRequestModel policy, int index) {
+  void _showPolicyActions(PolicyRequestModel policy) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -184,10 +177,11 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
               if (policy.status == 'Active')
                 ListTile(
                   leading: Icon(Icons.cancel, color: Colors.red),
-                  title: Text('Cancel Policy', style: TextStyle(color: Colors.red)),
+                  title: Text('Cancel Policy',
+                      style: TextStyle(color: Colors.red)),
                   onTap: () {
                     Navigator.pop(context);
-                    _confirmCancelPolicy(index);
+                    _confirmCancelPolicy(policy);
                   },
                 ),
             ],
@@ -203,12 +197,13 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
     );
   }
 
-  void _confirmCancelPolicy(int index) {
+  void _confirmCancelPolicy(PolicyRequestModel policy) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Cancel Policy'),
-        content: Text('Are you sure you want to cancel this policy? You may be eligible for a partial refund.'),
+        content: Text(
+            'Are you sure you want to cancel this policy? You may be eligible for a partial refund.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -217,7 +212,7 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              _cancelPolicy(index);
+              _cancelPolicy(policy);
             },
             child: Text('Yes, Cancel'),
           ),
@@ -226,10 +221,12 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
     );
   }
 
-  void _cancelPolicy(int index) {
-    setState(() {
-      activePolicies[index] = activePolicies[index].copyWith(status: 'Cancelled');
-    });
+  Future<void> _cancelPolicy(PolicyRequestModel policy) async {
+    await FirebaseFirestore.instance
+        .collection('policy_requests')
+        .doc(policy.id)
+        .update({'status': 'Cancelled'});
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Policy cancelled successfully')),
     );
@@ -270,5 +267,18 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
         ],
       ),
     );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'Active':
+        return Colors.green;
+      case 'Cancelled':
+        return Colors.red;
+      case 'Expired':
+        return Colors.grey;
+      default:
+        return Colors.blueGrey;
+    }
   }
 }
