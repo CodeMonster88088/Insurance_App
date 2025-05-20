@@ -1,29 +1,23 @@
 class InsuranceModel {
   final String id;
   final String provider;
+  final String providerId; // ✅ New field
   final double coverageAmount;
   final int duration;
   final String region;
   final double price;
-  // final DateTime startDate;
-  // final DateTime endDate;
-
   final int numberOfTravelers;
-  // final String coverageType;
   final double rating;
 
   InsuranceModel({
     required this.id,
     required this.provider,
+    required this.providerId, // ✅ Required in constructor
     required this.coverageAmount,
     required this.duration,
     required this.region,
     required this.price,
-    // required this.startDate,
-    // required this.endDate,
-
     required this.numberOfTravelers,
-    // required this.coverageType,
     required this.rating,
   });
 
@@ -31,15 +25,12 @@ class InsuranceModel {
     return InsuranceModel(
       id: map['id'],
       provider: map['provider'],
+      providerId: map['providerId'] ?? '', // ✅ Map it from Firestore
       coverageAmount: (map['coverageAmount'] ?? 0).toDouble(),
       duration: map['duration'],
       region: map['region'],
       price: (map['price'] ?? 0).toDouble(),
-      // startDate: DateTime.parse(map['startDate']),
-      // endDate: DateTime.parse(map['endDate']),
-
       numberOfTravelers: map['numberOfTravelers'],
-      // coverageType: map['coverageType'],
       rating: (map['rating'] ?? 0).toDouble(),
     );
   }
@@ -48,48 +39,36 @@ class InsuranceModel {
     return {
       'id': id,
       'provider': provider,
+      'providerId': providerId, // ✅ Include in map
       'coverageAmount': coverageAmount,
       'duration': duration,
       'region': region,
       'price': price,
-      // 'startDate': startDate.toIso8601String(),
-      // 'endDate': endDate.toIso8601String(),
-
-      // 'familyMembers': familyMembers,
       'numberOfTravelers': numberOfTravelers,
-      // 'coverageType': coverageType,
       'rating': rating,
     };
   }
 
   InsuranceModel copyWith({
-    int? id,
+    String? id,
     String? provider,
+    String? providerId, // ✅ Allow update in copyWith
     double? coverageAmount,
     int? duration,
     String? region,
     double? price,
-    // DateTime? startDate,
-    // DateTime? endDate,
-    String? status,
-    // List<String>? familyMembers,
     int? numberOfTravelers,
-    // String? coverageType,
     double? rating,
   }) {
     return InsuranceModel(
-      id: id?.toString() ?? this.id,
+      id: id ?? this.id,
       provider: provider ?? this.provider,
+      providerId: providerId ?? this.providerId,
       coverageAmount: coverageAmount ?? this.coverageAmount,
       duration: duration ?? this.duration,
       region: region ?? this.region,
       price: price ?? this.price,
-      // startDate: startDate ?? this.startDate,
-      // endDate: endDate ?? this.endDate,
-
-      // familyMembers: familyMembers ?? this.familyMembers,
       numberOfTravelers: numberOfTravelers ?? this.numberOfTravelers,
-      // coverageType: coverageType ?? this.coverageType,
       rating: rating ?? this.rating,
     );
   }
@@ -100,16 +79,12 @@ class InsuranceModel {
     return other is InsuranceModel &&
         other.id == id &&
         other.provider == provider &&
+        other.providerId == providerId &&
         other.coverageAmount == coverageAmount &&
         other.duration == duration &&
         other.region == region &&
         other.price == price &&
-        // other.startDate == startDate &&
-        // other.endDate == endDate &&
-
-        // other.familyMembers == familyMembers &&
         other.numberOfTravelers == numberOfTravelers &&
-        // other.coverageType == coverageType &&
         other.rating == rating;
   }
 
@@ -117,21 +92,17 @@ class InsuranceModel {
   int get hashCode {
     return id.hashCode ^
         provider.hashCode ^
+        providerId.hashCode ^
         coverageAmount.hashCode ^
         duration.hashCode ^
         region.hashCode ^
         price.hashCode ^
-        // startDate.hashCode ^
-        // endDate.hashCode ^
-
-        // familyMembers.hashCode ^
         numberOfTravelers.hashCode ^
-        // coverageType.hashCode ^
         rating.hashCode;
   }
 
   @override
   String toString() {
-    return 'InsuranceModel(id: $id, provider: $provider duration: $duration days, region: $region, price: $price, coverageamount:$coverageAmount, numberOfTravelers: $numberOfTravelers, rating: $rating)';
+    return 'InsuranceModel(id: $id, provider: $provider, providerId: $providerId, duration: $duration days, region: $region, price: $price, coverageAmount: $coverageAmount, numberOfTravelers: $numberOfTravelers, rating: $rating)';
   }
 }

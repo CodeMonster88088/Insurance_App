@@ -89,7 +89,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       final request = PolicyRequestModel(
         id: docRef.id,
         policyId: widget.insurance.id,
-        providerId: widget.User.uid,
+        providerId: widget.insurance.providerId,
         customerId: user.uid,
         customerName: userModel!.fullName,
         status: "pending",

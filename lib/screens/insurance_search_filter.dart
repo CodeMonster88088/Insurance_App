@@ -125,6 +125,7 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
         return InsuranceModel(
           id: data['id']?.toString() ?? '',
           provider: data['provider'] ?? '',
+          providerId: data['provider_id'] ?? '',
           coverageAmount: _toDouble(data['coverageAmount']),
           duration: _toInt(data['duration']),
           region: data['region']?.toString() ?? '',

@@ -11,6 +11,10 @@ class ActivePoliciesScreen extends StatefulWidget {
 
 class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
   String? currentUserId;
+  bool showActive = true;
+  bool showCancelled = true;
+  bool showPending = true;
+  bool showExpired = true;
 
   @override
   void initState() {
@@ -48,10 +52,25 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
             return PolicyRequestModel.fromFirestore(doc);
           }).toList();
 
+          List<PolicyRequestModel> filteredPolicies = policies.where((policy) {
+            switch (policy.status.toLowerCase()) {
+              case 'approved':
+                return showActive;
+              case 'cancelled':
+                return showCancelled;
+              case 'pending':
+                return showPending;
+              case 'expired':
+                return showExpired;
+              default:
+                return true;
+            }
+          }).toList();
+
           return ListView.builder(
-            itemCount: policies.length,
+            itemCount: filteredPolicies.length,
             itemBuilder: (context, index) =>
-                _buildPolicyCard(policies[index], index),
+                _buildPolicyCard(filteredPolicies[index], index),
           );
         },
       ),
@@ -174,7 +193,7 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
                   _fileClaim(policy);
                 },
               ),
-              if (policy.status == 'Active')
+              if (policy.status.toLowerCase() == 'active')
                 ListTile(
                   leading: Icon(Icons.cancel, color: Colors.red),
                   title: Text('Cancel Policy',
@@ -235,48 +254,84 @@ class _ActivePoliciesScreenState extends State<ActivePoliciesScreen> {
   void _showFilterOptions() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Filter Policies'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CheckboxListTile(
-              title: Text('Active Policies'),
-              value: true,
-              onChanged: (value) {},
+      builder: (context) {
+        bool tempShowActive = showActive;
+        bool tempShowCancelled = showCancelled;
+        bool tempShowPending = showPending;
+        bool tempShowExpired = showExpired;
+
+        return AlertDialog(
+          title: Text('Filter Policies'),
+          content: StatefulBuilder(
+            builder: (context, setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CheckboxListTile(
+                    title: Text('Active Policies'),
+                    value: tempShowActive,
+                    onChanged: (value) {
+                      setState(() => tempShowActive = value ?? false);
+                    },
+                  ),
+                  CheckboxListTile(
+                    title: Text('Cancelled Policies'),
+                    value: tempShowCancelled,
+                    onChanged: (value) {
+                      setState(() => tempShowCancelled = value ?? false);
+                    },
+                  ),
+                  CheckboxListTile(
+                    title: Text('Pending Policies'),
+                    value: tempShowPending,
+                    onChanged: (value) {
+                      setState(() => tempShowPending = value ?? false);
+                    },
+                  ),
+                  CheckboxListTile(
+                    title: Text('Expired Policies'),
+                    value: tempShowExpired,
+                    onChanged: (value) {
+                      setState(() => tempShowExpired = value ?? false);
+                    },
+                  ),
+                ],
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel'),
             ),
-            CheckboxListTile(
-              title: Text('Cancelled Policies'),
-              value: false,
-              onChanged: (value) {},
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  showActive = tempShowActive;
+                  showCancelled = tempShowCancelled;
+                  showPending = tempShowPending;
+                  showExpired = tempShowExpired;
+                });
+                Navigator.pop(context);
+              },
+              child: Text('Apply'),
             ),
           ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Apply filters here
-            },
-            child: Text('Apply'),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   Color _getStatusColor(String status) {
-    switch (status) {
-      case 'Active':
+    switch (status.toLowerCase()) {
+      case 'active':
         return Colors.green;
-      case 'Cancelled':
+      case 'cancelled':
         return Colors.red;
-      case 'Expired':
+      case 'expired':
         return Colors.grey;
+      case 'pending':
+        return Colors.orange;
       default:
         return Colors.blueGrey;
     }

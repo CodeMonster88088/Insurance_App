@@ -142,7 +142,7 @@ class _CompanyHomePageState extends State<CompanyHomePage> {
           style: TextStyle(fontSize: 18, color: Colors.grey),
         ),
         Text(
-          'Solidarity Insurance',
+          '${currentUser.fullName ?? 'User'}!',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         Divider(),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PersonalInfoScreen extends StatefulWidget {
   @override
@@ -7,26 +9,30 @@ class PersonalInfoScreen extends StatefulWidget {
 
 class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   // User data that can be edited
-  String fullName = 'John Doe';
-  String dateOfBirth = 'January 15, 1985';
-  String gender = 'Male';
-  String email = 'john.doe@example.com';
-  String phone = '+1 (555) 123-4567';
-  String address = '123 Main St, Anytown, USA';
-  String nationalId = '123-456-789';
-  String passport = 'AB1234567';
+  String fullName = 'Loading...';
+  String dateOfBirth = 'January 15, 1985'; // This one is static for now
+  String gender = 'Male'; // Static as well
+  String email = 'Loading...';
+  String phone = '+1 (555) 123-4567'; // Static here
+  String address = '123 Main St, Anytown, USA'; // Static
+  String nationalId = '123-456-789'; // Static
+  String passport = 'AB1234567'; // Static
 
   // Controllers for edit form
   late TextEditingController nameController;
   late TextEditingController dobController;
   late TextEditingController emailController;
 
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   @override
   void initState() {
     super.initState();
-    nameController = TextEditingController(text: fullName);
+    nameController = TextEditingController();
     dobController = TextEditingController(text: dateOfBirth);
-    emailController = TextEditingController(text: email);
+    emailController = TextEditingController();
+    _loadUserData();
   }
 
   @override
@@ -35,6 +41,38 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     dobController.dispose();
     emailController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadUserData() async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      final doc = await _firestore.collection('users').doc(user.uid).get();
+      if (doc.exists) {
+        final data = doc.data()!;
+        setState(() {
+          fullName = data['fullName'] ?? 'No Name';
+          email = data['email'] ?? 'No Email';
+
+          // Update controllers text as well
+          nameController.text = fullName;
+          emailController.text = email;
+        });
+      }
+    }
+  }
+
+  Future<void> _saveUserData() async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      await _firestore.collection('users').doc(user.uid).update({
+        'fullName': nameController.text,
+        'email': emailController.text,
+      });
+      setState(() {
+        fullName = nameController.text;
+        email = emailController.text;
+      });
+    }
   }
 
   @override
@@ -86,7 +124,8 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     );
   }
 
-  Widget _buildInfoCard(BuildContext context, {required String title, required List<Widget> items}) {
+  Widget _buildInfoCard(BuildContext context,
+      {required String title, required List<Widget> items}) {
     return Card(
       elevation: 2,
       child: Padding(
@@ -137,7 +176,6 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   void _showEditPersonalInfo(BuildContext context) {
     // Update controllers with current values before showing the dialog
     nameController.text = fullName;
-    dobController.text = dateOfBirth;
     emailController.text = email;
 
     showModalBottomSheet(
@@ -170,14 +208,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                   ),
                 ),
                 SizedBox(height: 16),
-                TextFormField(
-                  controller: dobController,
-                  decoration: InputDecoration(
-                    labelText: 'Date of Birth',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                SizedBox(height: 16),
+                // Removed date of birth editing for simplicity; can add if you want
                 TextFormField(
                   controller: emailController,
                   decoration: InputDecoration(
@@ -189,17 +220,13 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      // Save the changes to state
-                      setState(() {
-                        fullName = nameController.text;
-                        dateOfBirth = dobController.text;
-                        email = emailController.text;
-                      });
-                      
+                    onPressed: () async {
+                      await _saveUserData();
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Personal information updated successfully!')),
+                        SnackBar(
+                            content: Text(
+                                'Personal information updated successfully!')),
                       );
                     },
                     child: Text('Save Changes'),

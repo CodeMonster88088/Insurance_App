@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_app_test/models/user_model';
+import 'package:intl/intl.dart';
 
 class CompanyPoliciesView extends StatefulWidget {
   final UserModel user;
@@ -16,19 +17,11 @@ class _CompanyPoliciesViewState extends State<CompanyPoliciesView> {
   Future<List<Map<String, dynamic>>> _fetchPolicyRequests() async {
     final snapshot = await _firestore
         .collection('policy_requests')
-        .where('provider_id', isEqualTo: widget.user.fullName)
+        .where('providerId', isEqualTo: widget.user.uid)
+        .where('status',
+            whereIn: ['approved', 'pending']) // Only these statuses
         .get();
-print('Current user UID: ${widget.user.uid}');
-print('Current user UID: ${widget.user.fullName}');
-
-
-    final requests = snapshot.docs.map((doc) {
-      final data = doc.data();
-      data['id'] = doc.id;
-      return data;
-    }).toList();
-
-    return requests;
+    return snapshot.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
   }
 
   Future<List<Map<String, dynamic>>> _fetchMyPolicies() async {
@@ -36,31 +29,37 @@ print('Current user UID: ${widget.user.fullName}');
         .collection('insurance_policies')
         .where('provider_id', isEqualTo: widget.user.uid)
         .get();
+    return snapshot.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
+  }
 
-    final policies = snapshot.docs.map((doc) {
+  Future<List<Map<String, dynamic>>> _fetchArchivedPolicyRequests() async {
+    // Get all policy requests except approved and pending
+    final snapshot = await _firestore
+        .collection('policy_requests')
+        .where('providerId', isEqualTo: widget.user.uid)
+        .where('status', whereNotIn: ['approved', 'pending']).get();
+
+    return snapshot.docs.map((doc) {
       final data = doc.data();
       data['id'] = doc.id;
       return data;
     }).toList();
-
-    return policies;
   }
 
-  Future<void> _refreshPolicies() async {
-    setState(() {});
-  }
+  Future<void> _refreshPolicies() async => setState(() {});
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Policy Management'),
-          bottom: TabBar(
+          title: const Text('Policy Management'),
+          bottom: const TabBar(
             tabs: [
               Tab(icon: Icon(Icons.inbox), text: 'Policy Requests'),
               Tab(icon: Icon(Icons.list), text: 'My Policies'),
+              Tab(icon: Icon(Icons.archive), text: 'Archived'),
             ],
           ),
         ),
@@ -70,10 +69,10 @@ print('Current user UID: ${widget.user.fullName}');
               future: _fetchPolicyRequests(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 }
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text('No policy requests found.'));
+                  return const Center(child: Text('No policy requests found.'));
                 }
                 return _buildPolicyList(snapshot.data!, isRequestTab: true);
               },
@@ -82,18 +81,31 @@ print('Current user UID: ${widget.user.fullName}');
               future: _fetchMyPolicies(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 }
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text('No policies found.'));
+                  return const Center(child: Text('No active policies found.'));
                 }
                 return _buildPolicyList(snapshot.data!, isRequestTab: false);
+              },
+            ),
+            FutureBuilder<List<Map<String, dynamic>>>(
+              future: _fetchArchivedPolicyRequests(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(
+                      child: Text('No archived requests found.'));
+                }
+                return _buildPolicyList(snapshot.data!, isRequestTab: true);
               },
             ),
           ],
         ),
         floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.add),
+          child: const Icon(Icons.add),
           onPressed: () => _showNewPolicyDialog(context),
         ),
       ),
@@ -101,11 +113,7 @@ print('Current user UID: ${widget.user.fullName}');
   }
 
   Widget _buildPolicyList(List<Map<String, dynamic>> policies,
-      {bool isRequestTab = false}) {
-    if (policies.isEmpty) {
-      return Center(child: Text('No policies to display.'));
-    }
-
+      {required bool isRequestTab}) {
     return RefreshIndicator(
       onRefresh: _refreshPolicies,
       child: ListView.builder(
@@ -118,18 +126,24 @@ print('Current user UID: ${widget.user.fullName}');
 
   Widget _buildPolicyCard(
       Map<String, dynamic> policy, BuildContext context, bool isRequestTab) {
+    final dateFormat = DateFormat('dd MMM yyyy');
+    final currencyFormat = NumberFormat.simpleCurrency();
+
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       elevation: 2,
       child: ExpansionTile(
         leading: isRequestTab
             ? Icon(_getStatusIcon(policy['status']),
                 color: _getStatusColor(policy['status']))
-            : Icon(Icons.policy, color: Colors.blue),
-        title: Text('Policy #${policy['policyNumber'] ?? policy['id']}',
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(
-            '${policy['policyType'] ?? 'General'} • \$${(policy['coverageAmount'] ?? 0).toStringAsFixed(2)}'),
+            : const Icon(Icons.policy, color: Colors.blue),
+        title: Text(
+          isRequestTab
+              ? 'Request by ${policy['customerName'] ?? 'Unknown'}'
+              : 'Policy #${policy['id']}',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(_buildSubtitle(policy, isRequestTab, currencyFormat)),
         trailing: isRequestTab
             ? Chip(
                 label: Text(policy['status'].toUpperCase()),
@@ -143,109 +157,223 @@ print('Current user UID: ${widget.user.fullName}');
               )
             : null,
         children: [
-          Padding(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (isRequestTab) ...[
-                  _buildPolicyDetailItem(
-                      'Policy Holder', policy['userData']?['fullName'] ?? ''),
-                  _buildPolicyDetailItem(
-                      'Email', policy['userData']?['email'] ?? ''),
-                  _buildPolicyDetailItem(
-                      'Phone', policy['userData']?['phone'] ?? ''),
-                  _buildPolicyDetailItem(
-                      'ID Number', policy['userData']?['idNumber'] ?? ''),
-                  _buildPolicyDetailItem(
-                      'Address', policy['userData']?['address'] ?? ''),
-                  Divider(),
-                ],
-                _buildPolicyDetailItem('Coverage Amount',
-                    '\$${(policy['coverageAmount'] ?? 0).toStringAsFixed(2)}'),
-                _buildPolicyDetailItem('Premium Amount',
-                    '\$${(policy['premiumAmount'] ?? 0).toStringAsFixed(2)}'),
-                _buildPolicyDetailItem(
-                    'Duration', '${policy['duration']} days'),
-                Divider(),
-                if (isRequestTab &&
-                    policy['documents'] != null &&
-                    policy['documents'].isNotEmpty) ...[
-                  Text('Documents:',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  SizedBox(height: 8),
-                  ...policy['documents'].map<Widget>((doc) => ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Icon(Icons.insert_drive_file),
-                        title: Text(doc['name']),
-                        subtitle: Text('Uploaded: ${doc['uploaded']}'),
-                        trailing: IconButton(
-                          icon: Icon(Icons.download),
-                          onPressed: () {},
-                        ),
-                      )),
-                ],
-                if (isRequestTab && policy['status'] == 'pending') ...[
-                  SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          icon: Icon(Icons.check),
-                          label: Text('Approve'),
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green),
-                          onPressed: () async {
-                            await _firestore
-                                .collection('policies')
-                                .doc(policy['id'])
-                                .update({
-                              'status': 'approved',
-                              'approvedAt': DateTime.now().toIso8601String(),
-                            });
-                            _refreshPolicies();
-                          },
-                        ),
-                      ),
-                      SizedBox(width: 16),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          icon: Icon(Icons.close),
-                          label: Text('Reject'),
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red),
-                          onPressed: () async {
-                            await _firestore
-                                .collection('policies')
-                                .doc(policy['id'])
-                                .update({
-                              'status': 'rejected',
-                            });
-                            _refreshPolicies();
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ]
-              ],
-            ),
-          ),
+          _buildPolicyDetails(policy, isRequestTab, dateFormat, currencyFormat)
         ],
       ),
     );
   }
 
+  String _buildSubtitle(Map<String, dynamic> policy, bool isRequestTab,
+      NumberFormat currencyFormat) {
+    return isRequestTab
+        ? '${policy['region'] ?? '-'} • ${policy['numberOfTravelers']} travelers • ${currencyFormat.format(policy['totalPrice'] ?? 0)}'
+        : '${policy['region'] ?? '-'} • ${currencyFormat.format(policy['coverageAmount'] ?? 0)} • ${policy['duration']} days';
+  }
+
+  Widget _buildPolicyDetails(Map<String, dynamic> policy, bool isRequestTab,
+      DateFormat dateFormat, NumberFormat currencyFormat) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (isRequestTab) ...[
+            _buildPolicyDetailItem('Created At',
+                dateFormat.format((policy['createdAt'] as Timestamp).toDate())),
+            _buildPolicyDetailItem('Travel Dates',
+                '${dateFormat.format((policy['startDate'] as Timestamp).toDate())} → ${dateFormat.format((policy['endDate'] as Timestamp).toDate())}'),
+            _buildPolicyDetailItem(
+                'Payment Method', policy['paymentMethod'] ?? 'N/A'),
+            const Divider(),
+            const Text('Traveler Info:',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            ...((policy['travelers'] as List<dynamic>?) ?? [])
+                .map((traveler) => _buildTravelerInfo(traveler, dateFormat)),
+          ] else ...[
+            _buildPolicyDetailItem('Coverage Amount',
+                currencyFormat.format(policy['coverageAmount'] ?? 0)),
+            _buildPolicyDetailItem(
+                'Price', currencyFormat.format(policy['price'] ?? 0)),
+            _buildPolicyDetailItem('Duration', '${policy['duration']} days'),
+            _buildPolicyDetailItem('Region', policy['region'] ?? 'Unknown'),
+            _buildPolicyDetailItem(
+                'Travelers', '${policy['numberOfTravelers']}'),
+            _buildPolicyDetailItem('Provider', policy['provider'] ?? 'Unknown'),
+
+            // Add edit/delete buttons for My Policies tab
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.edit, size: 18),
+                    label: const Text('Edit'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    onPressed: () => _showEditPolicyDialog(context, policy),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.delete, size: 18),
+                    label: const Text('Delete'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    onPressed: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Confirm Deletion'),
+                          content: const Text(
+                              'Are you sure you want to delete this policy? This action cannot be undone.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('Cancel'),
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red),
+                              onPressed: () => Navigator.pop(context, true),
+                              child: const Text('Delete'),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (confirm == true) {
+                        await _deletePolicy(policy['id']);
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ],
+          if (isRequestTab &&
+              policy['documents'] != null &&
+              (policy['documents'] as List).isNotEmpty) ...[
+            const SizedBox(height: 8),
+            const Text('Documents:',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            ...policy['documents'].map<Widget>((doc) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.insert_drive_file),
+                  title: Text(doc['name'] ?? 'Document'),
+                  subtitle: Text('Uploaded: ${doc['uploaded'] ?? 'N/A'}'),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.download),
+                    onPressed: () {},
+                  ),
+                )),
+          ],
+          if (isRequestTab && policy['status'] == 'pending')
+            _buildApprovalButtons(policy['id'])
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTravelerInfo(
+      Map<String, dynamic> traveler, DateFormat dateFormat) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildPolicyDetailItem('Name', traveler['name']),
+          _buildPolicyDetailItem('Nationality', traveler['nationality']),
+          _buildPolicyDetailItem('Passport', traveler['passportNumber']),
+          _buildPolicyDetailItem(
+              'DOB',
+              dateFormat
+                  .format((traveler['dateOfBirth'] as Timestamp).toDate())),
+          const Divider(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildApprovalButtons(String policyId) {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.check),
+            label: const Text('Approve'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            onPressed: () async {
+              await _firestore
+                  .collection('policy_requests')
+                  .doc(policyId)
+                  .update({
+                'status': 'approved',
+                'approvedAt': DateTime.now().toIso8601String(),
+              });
+              _refreshPolicies();
+            },
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.close),
+            label: const Text('Reject'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Reject Policy Request'),
+                  content: const Text(
+                      'Are you sure you want to reject this request?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Cancel'),
+                    ),
+                    ElevatedButton(
+                      style:
+                          ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Reject'),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirm == true) {
+                await _firestore
+                    .collection('policy_requests')
+                    .doc(policyId)
+                    .update({
+                  'status': 'rejected',
+                });
+                _refreshPolicies();
+              }
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildPolicyDetailItem(String label, String value) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
               flex: 2,
               child: Text('$label:',
-                  style: TextStyle(fontWeight: FontWeight.bold))),
+                  style: const TextStyle(fontWeight: FontWeight.bold))),
           Expanded(flex: 3, child: Text(value)),
         ],
       ),
@@ -254,91 +382,152 @@ print('Current user UID: ${widget.user.fullName}');
 
   Future<void> _addNewPolicy(Map<String, dynamic> policyData) async {
     try {
-      await FirebaseFirestore.instance
-          .collection('insurance_policies')
-          .add(policyData);
-
+      await _firestore.collection('insurance_policies').add(policyData);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Policy added successfully')),
-      );
+          const SnackBar(content: Text('Policy added successfully')));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error adding policy: $e')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error adding policy: $e')));
     }
   }
 
-  void _showNewPolicyDialog(BuildContext context) {
-    final TextEditingController _coverageAmountController =
-        TextEditingController();
-    final TextEditingController _durationController = TextEditingController();
-    final TextEditingController _regionController = TextEditingController();
-    final TextEditingController _priceController = TextEditingController();
-    final TextEditingController _numberOfTravelersController =
-        TextEditingController();
+  Future<void> _deletePolicy(String policyId) async {
+    try {
+      await _firestore.collection('insurance_policies').doc(policyId).delete();
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Policy deleted successfully')));
+      _refreshPolicies();
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error deleting policy: $e')));
+    }
+  }
+
+  void _showEditPolicyDialog(
+      BuildContext context, Map<String, dynamic> policy) {
+    final controllers = {
+      'coverageAmount':
+          TextEditingController(text: policy['coverageAmount'].toString()),
+      'duration': TextEditingController(text: policy['duration'].toString()),
+      'region': TextEditingController(text: policy['region']),
+      'price': TextEditingController(text: policy['price'].toString()),
+      'numberOfTravelers':
+          TextEditingController(text: policy['numberOfTravelers'].toString()),
+    };
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Add New Policy'),
+        title: const Text('Edit Policy'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _coverageAmountController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: 'Coverage Amount'),
-              ),
-              TextField(
-                controller: _durationController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: 'Duration (in days)'),
-              ),
-              TextField(
-                controller: _regionController,
-                decoration: InputDecoration(labelText: 'Region'),
-              ),
-              TextField(
-                controller: _priceController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: 'Price'),
-              ),
-              TextField(
-                controller: _numberOfTravelersController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: 'Number of Travelers'),
-              ),
-            ],
+            children: controllers.entries
+                .map((e) => TextField(
+                      controller: e.value,
+                      keyboardType: e.key == 'region'
+                          ? TextInputType.text
+                          : TextInputType.number,
+                      decoration: InputDecoration(
+                          labelText: e.key
+                              .replaceAll(RegExp(r'([A-Z])'), ' \$1')
+                              .capitalize()),
+                    ))
+                .toList(),
           ),
         ),
         actions: [
           TextButton(
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
             onPressed: () => Navigator.pop(context),
           ),
           ElevatedButton(
-            child: Text('Submit'),
+            child: const Text('Save'),
+            onPressed: () {
+              final updatedPolicy = {
+                'coverageAmount':
+                    double.tryParse(controllers['coverageAmount']!.text) ?? 0,
+                'duration': int.tryParse(controllers['duration']!.text) ?? 0,
+                'region': controllers['region']!.text,
+                'price': double.tryParse(controllers['price']!.text) ?? 0,
+                'numberOfTravelers':
+                    int.tryParse(controllers['numberOfTravelers']!.text) ?? 0,
+                'updatedAt': Timestamp.now(),
+              };
+
+              _firestore
+                  .collection('insurance_policies')
+                  .doc(policy['id'])
+                  .update(updatedPolicy)
+                  .then((_) {
+                Navigator.pop(context);
+                _refreshPolicies();
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text('Policy updated successfully')));
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showNewPolicyDialog(BuildContext context) {
+    final controllers = {
+      'coverageAmount': TextEditingController(),
+      'duration': TextEditingController(),
+      'region': TextEditingController(),
+      'price': TextEditingController(),
+      'numberOfTravelers': TextEditingController(),
+    };
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add New Policy'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: controllers.entries
+                .map((e) => TextField(
+                      controller: e.value,
+                      keyboardType: e.key == 'region'
+                          ? TextInputType.text
+                          : TextInputType.number,
+                      decoration: InputDecoration(
+                          labelText: e.key
+                              .replaceAll(RegExp(r'([A-Z])'), ' \$1')
+                              .capitalize()),
+                    ))
+                .toList(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(context),
+          ),
+          ElevatedButton(
+            child: const Text('Submit'),
             onPressed: () {
               final newPolicy = {
-                'id': DateTime.now().millisecondsSinceEpoch.toString(), //TODO
+                'id': DateTime.now().millisecondsSinceEpoch.toString(),
                 'provider': widget.user.fullName,
                 'provider_id': widget.user.uid,
                 'coverageAmount':
-                    double.tryParse(_coverageAmountController.text) ?? 0,
-                'duration': int.tryParse(_durationController.text) ?? 0,
-                'region': _regionController.text,
-                'price': double.tryParse(_priceController.text) ?? 0,
+                    double.tryParse(controllers['coverageAmount']!.text) ?? 0,
+                'duration': int.tryParse(controllers['duration']!.text) ?? 0,
+                'region': controllers['region']!.text,
+                'price': double.tryParse(controllers['price']!.text) ?? 0,
                 'numberOfTravelers':
-                    int.tryParse(_numberOfTravelersController.text) ?? 0,
-
-                // No 'status' field — this is a company-created policy
+                    int.tryParse(controllers['numberOfTravelers']!.text) ?? 0,
+                'rating': 0.0,
+                'createdAt': Timestamp.now(),
               };
 
               _addNewPolicy(newPolicy).then((_) {
                 Navigator.pop(context);
-                setState(
-                    () {}); // this will re-trigger FutureBuilder to fetch policies again
+                setState(() {});
               });
             },
           ),
@@ -372,4 +561,9 @@ print('Current user UID: ${widget.user.fullName}');
         return Icons.help_outline;
     }
   }
+}
+
+extension StringExtension on String {
+  String capitalize() =>
+      isEmpty ? this : '${this[0].toUpperCase()}${substring(1)}';
 }
