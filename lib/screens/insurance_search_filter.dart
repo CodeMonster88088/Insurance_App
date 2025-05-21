@@ -34,7 +34,6 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
   List<String> _providers = [];
   List<String> _regions = [];
 
-  final TextEditingController _destinationController = TextEditingController();
   final TextEditingController _durationController = TextEditingController();
 
   Future<void> _selectDateRange() async {
@@ -64,7 +63,6 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
       _numberOfTravelers = 1;
       _selectedProvider = null;
       _selectedRegion = null;
-      _destinationController.clear();
       _durationController.clear();
       _filteredResults = [];
     });
@@ -175,6 +173,7 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Search Travel Insurance'),
+        automaticallyImplyLeading: false, // This hides the back button
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -182,8 +181,7 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildTextField(
-                  'Destination', 'Enter Destination', _destinationController),
+              
               const SizedBox(height: 15),
               _buildDateRangePicker(),
               const SizedBox(height: 15),
@@ -255,11 +253,10 @@ class _InsuranceSearchFilterState extends State<InsuranceSearchFilter> {
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
                 itemCount: _filteredResults.length,
-                itemBuilder: (context, index) =>
-                    InsuranceListItem(
-                    insurance: _filteredResults[index],
-                    user: widget.user,  // pass the user here
-                  ),
+                itemBuilder: (context, index) => InsuranceListItem(
+                  insurance: _filteredResults[index],
+                  user: widget.user, // pass the user here
+                ),
               );
   }
 
