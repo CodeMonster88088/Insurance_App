@@ -1,7 +1,6 @@
 # flutter_app_test
 
-A new Flutter project.
-
+A flutter app 
 ## Getting Started
 
 This project is a starting point for a Flutter application.
